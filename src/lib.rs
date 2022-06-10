@@ -128,8 +128,6 @@ impl Staking {
 
         transfer_tokens(&token_address, &msg::source(), &exec::program_id(), amount).await;
 
-        msg::reply(StakingEvent::StakeAccepted(amount), 0).unwrap();
-
         self.update_reward();
         let amount_per_token = self.get_max_reward(amount);
 
@@ -146,6 +144,7 @@ impl Staking {
             });
 
         self.total_staked = self.total_staked.saturating_add(amount);
+        msg::reply(StakingEvent::StakeAccepted(amount), 0).unwrap();
     }
 
     ///Sends reward to the staker
@@ -161,11 +160,11 @@ impl Staking {
 
         transfer_tokens(&token_address, &exec::program_id(), &msg::source(), reward).await;
 
-        msg::reply(StakingEvent::Reward(reward), 0).unwrap();
-
         self.stakers
             .entry(msg::source())
             .and_modify(|stake| stake.distributed = stake.distributed.saturating_add(reward));
+
+        msg::reply(StakingEvent::Reward(reward), 0).unwrap();
     }
 
     /// Withdraws the staked the tokens
@@ -191,14 +190,13 @@ impl Staking {
 
         transfer_tokens(&token_address, &exec::program_id(), &msg::source(), amount).await;
 
-        msg::reply(StakingEvent::Withdrawn(amount), 0).unwrap();
-
         staker.reward_allowed = staker.reward_allowed.saturating_add(amount_per_token);
         staker.balance = staker.balance.saturating_sub(amount);
 
         self.update_reward();
 
         self.total_staked = self.total_staked.saturating_sub(amount);
+        msg::reply(StakingEvent::Withdrawn(amount), 0).unwrap();
     }
 }
 

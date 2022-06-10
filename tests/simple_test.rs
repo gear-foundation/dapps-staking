@@ -11,7 +11,7 @@ use gtest::{Program, System};
 use staking_io::*;
 
 const USERS: &[u64] = &[1, 2, 3, 4, 5, 6, 7, 8];
-const DECIMALS_COUNT: u128 = u128::pow(10, 20);
+const DECIMALS_COUNT: u128 = 10_u128.pow(20);
 
 #[derive(Debug, Default, Encode)]
 struct Staking {
