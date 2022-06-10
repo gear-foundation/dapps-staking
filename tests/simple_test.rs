@@ -95,10 +95,7 @@ fn init_staking_token(sys: &System) {
 }
 
 fn init_reward_token(sys: &System) {
-    let rw_token = Program::from_file(
-        sys,
-        "../target/wasm32-unknown-unknown/release/fungible_token.wasm",
-    );
+    let rw_token = Program::from_file(sys, "./target/fungible_token.wasm");
 
     let res = rw_token.send(
         USERS[3],
