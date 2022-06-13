@@ -23,7 +23,7 @@ pub struct Staker {
 pub enum StakingAction {
     Stake(u128),
     Withdraw(u128),
-    UpdateStaking(InitStaking),
+    SetTotalReward(u128),
     GetReward,
 }
 
