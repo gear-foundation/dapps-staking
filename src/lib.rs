@@ -34,7 +34,7 @@ async fn transfer_tokens(
     to: &ActorId,
     amount_tokens: u128,
 ) {
-    msg::send_and_wait_for_reply::<FTEvent, _>(
+    msg::send_for_reply(
         *token_address,
         FTAction::Transfer {
             from: *from,
@@ -43,31 +43,23 @@ async fn transfer_tokens(
         },
         0,
     )
-    .unwrap()
+    .expect("Error in sending message")
     .await
     .expect("Error in transfer");
-}
-
-pub async fn balance(token_address: &ActorId, account: &ActorId) -> u128 {
-    let balance_response: FTEvent =
-        msg::send_and_wait_for_reply(*token_address, FTAction::BalanceOf(*account), 0)
-            .unwrap()
-            .await
-            .expect("Error in balance");
-
-    if let FTEvent::Balance(balance_response) = balance_response {
-        balance_response
-    } else {
-        0
-    }
 }
 
 impl Staking {
     /// Calculates the reward produced so far
     fn produced(&mut self) -> u128 {
-        let elapsed_time = (exec::block_timestamp() - self.produced_time) as u128;
+        let mut elapsed_time = exec::block_timestamp() - self.produced_time;
+
+        if elapsed_time > self.distribution_time {
+            elapsed_time = self.distribution_time;
+        }
+
         self.all_produced
-            + self.reward_total.saturating_mul(elapsed_time) / self.distribution_time as u128
+            + self.reward_total.saturating_mul(elapsed_time as u128)
+                / self.distribution_time as u128
     }
 
     /// Updates the reward produced so far and calculates tokens per stake
@@ -108,32 +100,14 @@ impl Staking {
             - staker.distributed
     }
 
-    /// Sets the reward to be distributed within distribution time
-    /// `total_reward`: the value of the distributed reward
-    async fn set_total_reward(&mut self, total_reward: u128) {
-        if msg::source() != self.owner {
-            panic!("set_total_reward(): only owner can change total reward");
-        }
-
-        if total_reward == 0 {
-            panic!("set_total_reward(): reward_total is null");
-        }
-
-        if balance(&self.reward_token_address, &exec::program_id()).await < total_reward {
-            panic!("set_total_reward(): the contract must have enough reward tokens");
-        }
-
-        self.update_reward();
-
-        self.all_produced = self.reward_produced;
-        self.produced_time = exec::block_timestamp();
-        self.reward_total = total_reward;
-    }
-
     /// Updates the staking contract.
     /// Sets the reward to be distributed within distribution time
     /// param 'config' - updated configuration
     fn update_staking(&mut self, config: InitStaking) {
+        if msg::source() != self.owner {
+            panic!("update_staking(): only the owner can update the staking");
+        }
+
         if config.reward_total == 0 {
             panic!("update_staking(): reward_total is null");
         }
@@ -160,12 +134,11 @@ impl Staking {
             panic!("stake(): amount is null");
         }
 
-        self.update_reward();
-
         let token_address = self.staking_token_address;
 
         transfer_tokens(&token_address, &msg::source(), &exec::program_id(), amount).await;
 
+        self.update_reward();
         let amount_per_token = self.get_max_reward(amount);
 
         self.stakers
@@ -181,7 +154,7 @@ impl Staking {
             });
 
         self.total_staked = self.total_staked.saturating_add(amount);
-        msg::reply(StakingEvent::StakeAccepted(amount), 0).unwrap();
+        msg::reply(StakingEvent::StakeAccepted(amount), 0).expect("reply: 'StakeAccepted' error");
     }
 
     ///Sends reward to the staker
@@ -201,7 +174,7 @@ impl Staking {
             .entry(msg::source())
             .and_modify(|stake| stake.distributed = stake.distributed.saturating_add(reward));
 
-        msg::reply(StakingEvent::Reward(reward), 0).unwrap();
+        msg::reply(StakingEvent::Reward(reward), 0).expect("reply: 'Reward' error");
     }
 
     /// Withdraws the staked the tokens
@@ -213,8 +186,8 @@ impl Staking {
         }
 
         self.update_reward();
-
         let amount_per_token = self.get_max_reward(amount);
+
         let staker = self
             .stakers
             .get_mut(&msg::source())
@@ -224,19 +197,14 @@ impl Staking {
             panic!("withdraw(): staker.balance < amount");
         }
 
-        transfer_tokens(
-            &self.staking_token_address,
-            &exec::program_id(),
-            &msg::source(),
-            amount,
-        )
-        .await;
+        let token_address = self.staking_token_address;
+        transfer_tokens(&token_address, &exec::program_id(), &msg::source(), amount).await;
 
         staker.reward_allowed = staker.reward_allowed.saturating_add(amount_per_token);
         staker.balance = staker.balance.saturating_sub(amount);
         self.total_staked = self.total_staked.saturating_sub(amount);
 
-        msg::reply(StakingEvent::Withdrawn(amount), 0).unwrap();
+        msg::reply(StakingEvent::Withdrawn(amount), 0).expect("reply: 'Withdrawn' error");
     }
 }
 
@@ -255,8 +223,9 @@ async unsafe fn main() {
             staking.withdraw(amount).await;
         }
 
-        StakingAction::SetTotalReward(reward) => {
-            staking.set_total_reward(reward).await;
+        StakingAction::UpdateStaking(config) => {
+            staking.update_staking(config);
+            msg::reply(StakingEvent::Updated, 0).expect("reply: 'Updated' error");
         }
 
         StakingAction::GetReward => {
@@ -271,9 +240,6 @@ pub unsafe extern "C" fn init() {
 
     let mut staking = Staking {
         owner: msg::source(),
-        staking_token_address: config.staking_token_address,
-        reward_token_address: config.reward_token_address,
-        distribution_time: config.distribution_time,
         ..Default::default()
     };
 
