@@ -49,6 +49,7 @@ fn init_staking_token(sys: &System) {
         InitConfig {
             name: String::from("StakingToken"),
             symbol: String::from("STK"),
+            decimals: 18,
         },
     );
 
@@ -102,6 +103,7 @@ fn init_reward_token(sys: &System) {
         InitConfig {
             name: String::from("RewardToken"),
             symbol: String::from("RTK"),
+            decimals: 18,
         },
     );
 
@@ -258,7 +260,7 @@ fn send_reward() {
 
     staking.total_staked = 1500;
 
-    sys.spend_blocks(2000);
+    sys.spend_blocks(2);
 
     let res = st.send(USERS[5], StakingAction::Stake(2000));
     assert!(res.contains(&(USERS[5], StakingEvent::StakeAccepted(2000).encode())));
@@ -275,7 +277,7 @@ fn send_reward() {
 
     staking.total_staked = 3500;
 
-    sys.spend_blocks(1000);
+    sys.spend_blocks(1);
 
     update_reward(&mut staking, time + 3000);
     let reward = calc_reward(&mut staking, &USERS[4].into());
@@ -294,7 +296,7 @@ fn send_reward() {
     );
     assert!(res.contains(&(USERS[4], StakingEvent::Reward(reward).encode())));
 
-    sys.spend_blocks(1000);
+    sys.spend_blocks(1);
 
     update_reward(&mut staking, time + 4000);
     let reward = calc_reward(&mut staking, &USERS[5].into());
@@ -350,7 +352,7 @@ fn withdraw() {
 
     staking.total_staked = 1500;
 
-    sys.spend_blocks(2000);
+    sys.spend_blocks(2);
 
     let res = st.send(USERS[5], StakingAction::Stake(2000));
     assert!(res.contains(&(USERS[5], StakingEvent::StakeAccepted(2000).encode())));
@@ -367,7 +369,7 @@ fn withdraw() {
 
     staking.total_staked = 3500;
 
-    sys.spend_blocks(1000);
+    sys.spend_blocks(1);
 
     let res = st.send(USERS[4], StakingAction::Withdraw(500));
     assert!(res.contains(&(USERS[4], StakingEvent::Withdrawn(500).encode())));
@@ -382,7 +384,7 @@ fn withdraw() {
         staking.total_staked -= 500;
     }
 
-    sys.spend_blocks(1000);
+    sys.spend_blocks(1);
 
     update_reward(&mut staking, time + 4000);
     let reward = calc_reward(&mut staking, &USERS[4].into());
@@ -396,7 +398,7 @@ fn withdraw() {
     assert!(res.contains(&(USERS[4], StakingEvent::Reward(reward).encode())));
     println!("Reward[4]: {:?}", res.decoded_log::<StakingEvent>());
 
-    sys.spend_blocks(2000);
+    sys.spend_blocks(2);
 
     update_reward(&mut staking, time + 6000);
     let reward = calc_reward(&mut staking, &USERS[5].into());
@@ -447,7 +449,7 @@ fn meta_tests() {
 
     staking.total_staked = 1500;
 
-    sys.spend_blocks(2000);
+    sys.spend_blocks(2);
 
     let res = st.send(USERS[5], StakingAction::Stake(2000));
     assert!(res.contains(&(USERS[5], StakingEvent::StakeAccepted(2000).encode())));

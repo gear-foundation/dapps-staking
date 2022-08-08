@@ -32,6 +32,7 @@ fn init_staking_token(sys: &System) {
         InitConfig {
             name: String::from("StakingToken"),
             symbol: String::from("STK"),
+            decimals: 18,
         },
     );
 
@@ -85,6 +86,7 @@ fn init_reward_token(sys: &System) {
         InitConfig {
             name: String::from("RewardToken"),
             symbol: String::from("RTK"),
+            decimals: 18,
         },
     );
 
