@@ -3,6 +3,7 @@ name = "staking"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
+readme = "README.md"
 authors = ["Gear Technologies"]
 
 [dependencies]

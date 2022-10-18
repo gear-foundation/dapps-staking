@@ -1,4 +1,5 @@
 #![no_std]
+
 use codec::{Decode, Encode};
 use ft_io::*;
 use gstd::{exec, msg, prelude::*, ActorId};
@@ -136,28 +137,51 @@ impl Staking {
 
         let token_address = self.staking_token_address;
 
+        // Ensure, that user entry exists before async call
+        // Required to update transaction status later
+        self.stakers.entry(msg::source()).or_insert(Staker {
+            reward_debt: 0,
+            balance: 0,
+            ..Default::default()
+        });
+
+        // If `last_transaction_id` entry already exists, then try exec
+        // transfer one more time, but without state changes
+        self.stakers.entry(msg::source()).and_modify(|stake| {
+            stake
+                .transaction_ids
+                .entry(stake.last_transaction_id)
+                .and_modify(|tx_status| {
+                    // Additional check to ensure, that prev transaction is succeed or failed
+                    // We must increment id in both of these cases
+                    assert_eq!(*tx_status, TransactionStatus::InProgress, "Invalid tx id!")
+                })
+                .or_insert(TransactionStatus::InProgress);
+        });
+
         transfer_tokens(&token_address, &msg::source(), &exec::program_id(), amount).await;
+
+        // TODO: Get async reply and possibly change transaction status
 
         self.update_reward();
         let amount_per_token = self.get_max_reward(amount);
 
-        self.stakers
-            .entry(msg::source())
-            .and_modify(|stake| {
-                stake.reward_debt = stake.reward_debt.saturating_add(amount_per_token);
-                stake.balance = stake.balance.saturating_add(amount);
-            })
-            .or_insert(Staker {
-                reward_debt: amount_per_token,
-                balance: amount,
-                ..Default::default()
-            });
+        self.stakers.entry(msg::source()).and_modify(|stake| {
+            stake.reward_debt = stake.reward_debt.saturating_add(amount_per_token);
+            stake.balance = stake.balance.saturating_add(amount);
+
+            stake
+                .transaction_ids
+                .entry(stake.last_transaction_id)
+                .and_modify(|tx_status| *tx_status = TransactionStatus::Success);
+            stake.last_transaction_id = stake.last_transaction_id.saturating_add(1);
+        });
 
         self.total_staked = self.total_staked.saturating_add(amount);
         msg::reply(StakingEvent::StakeAccepted(amount), 0).expect("reply: 'StakeAccepted' error");
     }
 
-    ///Sends reward to the staker
+    /// Sends reward to the staker
     async fn send_reward(&mut self) {
         self.update_reward();
         let reward = self.calc_reward();
@@ -168,11 +192,29 @@ impl Staking {
 
         let token_address = self.reward_token_address;
 
+        self.stakers.entry(msg::source()).and_modify(|stake| {
+            stake
+                .transaction_ids
+                .entry(stake.last_transaction_id)
+                .and_modify(|tx_status| {
+                    // Additional check to ensure, that prev transaction is succeed or failed
+                    // We must increment id in both of these cases
+                    assert_eq!(*tx_status, TransactionStatus::InProgress, "Invalid tx id!")
+                })
+                .or_insert(TransactionStatus::InProgress);
+        });
+
         transfer_tokens(&token_address, &exec::program_id(), &msg::source(), reward).await;
 
-        self.stakers
-            .entry(msg::source())
-            .and_modify(|stake| stake.distributed = stake.distributed.saturating_add(reward));
+        self.stakers.entry(msg::source()).and_modify(|stake| {
+            stake.distributed = stake.distributed.saturating_add(reward);
+
+            stake
+                .transaction_ids
+                .entry(stake.last_transaction_id)
+                .and_modify(|tx_status| *tx_status = TransactionStatus::Success);
+            stake.last_transaction_id = stake.last_transaction_id.saturating_add(1);
+        });
 
         msg::reply(StakingEvent::Reward(reward), 0).expect("reply: 'Reward' error");
     }
@@ -198,10 +240,28 @@ impl Staking {
         }
 
         let token_address = self.staking_token_address;
+
+        staker
+            .transaction_ids
+            .entry(staker.last_transaction_id)
+            .and_modify(|tx_status| {
+                // Additional check to ensure, that prev transaction is succeed or failed
+                // We must increment id in both of these cases
+                assert_eq!(*tx_status, TransactionStatus::InProgress, "Invalid tx id!")
+            })
+            .or_insert(TransactionStatus::InProgress);
+
         transfer_tokens(&token_address, &exec::program_id(), &msg::source(), amount).await;
 
         staker.reward_allowed = staker.reward_allowed.saturating_add(amount_per_token);
         staker.balance = staker.balance.saturating_sub(amount);
+
+        staker
+            .transaction_ids
+            .entry(staker.last_transaction_id)
+            .and_modify(|tx_status| *tx_status = TransactionStatus::Success);
+        staker.last_transaction_id = staker.last_transaction_id.saturating_add(1);
+
         self.total_staked = self.total_staked.saturating_sub(amount);
 
         msg::reply(StakingEvent::Withdrawn(amount), 0).expect("reply: 'Withdrawn' error");

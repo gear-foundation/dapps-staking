@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# Gear Template App
+# Staking
 
 [![Build][build_badge]][build_href]
 [![License][lic_badge]][lic_href]
@@ -17,7 +17,7 @@
 
 <!-- Description starts here -->
 
-Stacking is an analogue of a bank deposit, receiving passive earnings due to simple storage of tokens. The percentage of income may be different, it all depends on the term of the deposit.
+Staking is an analogue of a bank deposit, receiving passive earnings due to simple storage of tokens. The percentage of income may be different, it all depends on the term of the deposit.
 
 <!-- End of description -->
 

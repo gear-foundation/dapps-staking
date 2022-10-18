@@ -1,4 +1,5 @@
 #![no_std]
+
 use codec::{Decode, Encode};
 use gstd::{prelude::*, ActorId};
 use scale_info::TypeInfo;
@@ -11,12 +12,21 @@ pub struct InitStaking {
     pub reward_total: u128,
 }
 
+#[derive(Debug, PartialEq, Eq, Encode, Decode, TypeInfo, Copy, Clone)]
+pub enum TransactionStatus {
+    InProgress,
+    Success,
+    Failure,
+}
+
 #[derive(Debug, Default, Encode, Decode, TypeInfo, Clone, PartialEq)]
 pub struct Staker {
     pub balance: u128,
     pub reward_allowed: u128,
     pub reward_debt: u128,
     pub distributed: u128,
+    pub last_transaction_id: u128,
+    pub transaction_ids: BTreeMap<u128, TransactionStatus>,
 }
 
 #[derive(Debug, Decode, Encode, TypeInfo)]
