@@ -25,24 +25,23 @@ pub struct Staker {
     pub reward_allowed: u128,
     pub reward_debt: u128,
     pub distributed: u128,
-    pub last_transaction_id: u128,
-    pub transaction_ids: BTreeMap<u128, TransactionStatus>,
 }
 
 #[derive(Debug, Decode, Encode, TypeInfo)]
 pub enum StakingAction {
-    Stake(u128),
-    Withdraw(u128),
+    Stake(u128, u128),
+    Withdraw(u128, u128),
     UpdateStaking(InitStaking),
-    GetReward,
+    GetReward(u128),
+    Clear(u128),
 }
 
 #[derive(Debug, Encode, Decode, TypeInfo)]
 pub enum StakingEvent {
-    StakeAccepted(u128),
-    Withdrawn(u128),
+    StakeAccepted(u128, u128),
+    Withdrawn(u128, u128),
     Updated,
-    Reward(u128),
+    Reward(u128, u128),
 }
 
 #[derive(Debug, Encode, Decode, TypeInfo, PartialEq)]
