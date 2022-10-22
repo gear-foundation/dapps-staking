@@ -12,13 +12,6 @@ pub struct InitStaking {
     pub reward_total: u128,
 }
 
-#[derive(Debug, PartialEq, Eq, Encode, Decode, TypeInfo, Copy, Clone)]
-pub enum TransactionStatus {
-    InProgress,
-    Success,
-    Failure,
-}
-
 #[derive(Debug, Default, Encode, Decode, TypeInfo, Clone, PartialEq)]
 pub struct Staker {
     pub balance: u128,
@@ -33,7 +26,7 @@ pub enum StakingAction {
     Withdraw(u128),
     UpdateStaking(InitStaking),
     GetReward,
-    Continue(u64)
+    Continue(u64),
 }
 
 #[derive(Debug, Encode, Decode, TypeInfo)]
@@ -42,7 +35,7 @@ pub enum StakingEvent {
     Withdrawn(u64, u128),
     Updated,
     Reward(u64, u128),
-    TransactionProcessed
+    TransactionProcessed,
 }
 
 #[derive(Debug, Encode, Decode, TypeInfo, PartialEq)]
