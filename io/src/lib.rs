@@ -4,7 +4,7 @@ use codec::{Decode, Encode};
 use gstd::{prelude::*, ActorId};
 use scale_info::TypeInfo;
 
-#[derive(Debug, Decode, Encode, TypeInfo)]
+#[derive(Debug, Clone, Decode, Encode, TypeInfo)]
 pub struct InitStaking {
     pub staking_token_address: ActorId,
     pub reward_token_address: ActorId,
@@ -27,21 +27,22 @@ pub struct Staker {
     pub distributed: u128,
 }
 
-#[derive(Debug, Decode, Encode, TypeInfo)]
+#[derive(Debug, Clone, Decode, Encode, TypeInfo)]
 pub enum StakingAction {
-    Stake(u128, u128),
-    Withdraw(u128, u128),
+    Stake(u128),
+    Withdraw(u128),
     UpdateStaking(InitStaking),
-    GetReward(u128),
-    Clear(u128),
+    GetReward,
+    Continue(u64)
 }
 
 #[derive(Debug, Encode, Decode, TypeInfo)]
 pub enum StakingEvent {
-    StakeAccepted(u128, u128),
-    Withdrawn(u128, u128),
+    StakeAccepted(u64, u128),
+    Withdrawn(u64, u128),
     Updated,
-    Reward(u128, u128),
+    Reward(u64, u128),
+    TransactionProcessed
 }
 
 #[derive(Debug, Encode, Decode, TypeInfo, PartialEq)]
