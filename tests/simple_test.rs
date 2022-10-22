@@ -21,8 +21,8 @@ struct Staking {
     stakers: BTreeMap<ActorId, Staker>,
 }
 
-fn init_staking(sys: &System, st_token_id: u64, rw_token_id: u64) -> Program<'_> {
-    let staking = Program::current(sys);
+fn init_staking(sys: &System, id: u64, st_token_id: u64, rw_token_id: u64) -> Program<'_> {
+    let staking = Program::current_with_id(sys, id);
 
     let res = staking.send(
         USERS[3],
@@ -39,32 +39,38 @@ fn init_staking(sys: &System, st_token_id: u64, rw_token_id: u64) -> Program<'_>
     staking
 }
 
-fn init_staking_token(sys: &System, id: u64) -> Program<'_> {
+fn init_staking_token(sys: &System, id: u64, approve_id: u64) -> Program<'_> {
     let st_token = Program::ftoken(USERS[3], id, sys);
 
     st_token.mint(0, USERS[3], USERS[0], 100000, false);
+    st_token.approve(1, USERS[0], approve_id, 100000, false);
     st_token.check_balance(USERS[0], 100000);
 
-    st_token.mint(1, USERS[3], USERS[4], 10000, false);
+    st_token.mint(2, USERS[3], USERS[4], 10000, false);
+    st_token.approve(3, USERS[4], approve_id, 10000, false);
     st_token.check_balance(USERS[4], 10000);
 
-    st_token.mint(2, USERS[3], USERS[5], 20000, false);
+    st_token.mint(4, USERS[3], USERS[5], 20000, false);
+    st_token.approve(5, USERS[5], approve_id, 20000, false);
     st_token.check_balance(USERS[5], 20000);
 
-    st_token.mint(3, USERS[3], USERS[6], 20000, false);
+    st_token.mint(6, USERS[3], USERS[6], 20000, false);
+    st_token.approve(7, USERS[6], approve_id, 20000, false);
     st_token.check_balance(USERS[6], 20000);
 
-    st_token.mint(4, USERS[3], USERS[7], 20000, false);
+    st_token.mint(8, USERS[3], USERS[7], 20000, false);
+    st_token.approve(9, USERS[7], approve_id, 20000, false);
     st_token.check_balance(USERS[7], 20000);
 
     st_token
 }
 
-fn init_reward_token(sys: &System, id: u64) -> Program<'_> {
+fn init_reward_token(sys: &System, id: u64, approve_id: u64) -> Program<'_> {
     let rw_token = Program::ftoken(USERS[3], id, sys);
 
-    rw_token.mint(0, USERS[3], USERS[0], 100000, false);
-    rw_token.check_balance(USERS[0], 100000);
+    rw_token.mint(0, USERS[3], approve_id, 100000, false);
+    rw_token.approve(1, USERS[4], approve_id, 10000, false);
+    rw_token.check_balance(approve_id, 100000);
 
     rw_token
 }
@@ -137,9 +143,9 @@ fn stake() {
     let sys = System::new();
     sys.init_logger();
 
-    let _st_token = init_staking_token(&sys, 1337);
-    let _rw_token = init_reward_token(&sys, 228);
-    let staking = init_staking(&sys, 1337, 228);
+    let _st_token = init_staking_token(&sys, 1337, 1010);
+    let _rw_token = init_reward_token(&sys, 228, 1010);
+    let staking = init_staking(&sys, 1010, 1337, 228);
 
     let res = staking.send(USERS[4], StakingAction::Stake(1000));
     assert!(res.contains(&(USERS[4], StakingEvent::StakeAccepted(0, 1000).encode())));
@@ -153,9 +159,9 @@ fn update_staking_test() {
     let sys = System::new();
     sys.init_logger();
 
-    let _st_token = init_staking_token(&sys, 1337);
-    let _rw_token = init_reward_token(&sys, 228);
-    let staking = init_staking(&sys, 1337, 228);
+    let _st_token = init_staking_token(&sys, 1337, 1010);
+    let _rw_token = init_reward_token(&sys, 228, 1010);
+    let staking = init_staking(&sys, 1010, 1337, 228);
 
     let res = staking.send(
         USERS[3],
@@ -174,9 +180,9 @@ fn send_reward() {
     let sys = System::new();
     sys.init_logger();
 
-    let _st_token = init_staking_token(&sys, 1337);
-    let _rw_token = init_reward_token(&sys, 228);
-    let st = init_staking(&sys, 1337, 228);
+    let _st_token = init_staking_token(&sys, 1337, 1010);
+    let _rw_token = init_reward_token(&sys, 228, 1010);
+    let st = init_staking(&sys, 1010, 1337, 228);
 
     let time = sys.block_timestamp();
 
@@ -262,9 +268,9 @@ fn withdraw() {
     let sys = System::new();
     sys.init_logger();
 
-    let _st_token = init_staking_token(&sys, 1337);
-    let _rw_token = init_reward_token(&sys, 228);
-    let st = init_staking(&sys, 1337, 228);
+    let _st_token = init_staking_token(&sys, 1337, 1010);
+    let _rw_token = init_reward_token(&sys, 228, 1010);
+    let st = init_staking(&sys, 1010, 1337, 228);
 
     let time = sys.block_timestamp();
 
@@ -355,9 +361,9 @@ fn meta_tests() {
     let sys = System::new();
     sys.init_logger();
 
-    let _st_token = init_staking_token(&sys, 1337);
-    let _rw_token = init_reward_token(&sys, 228);
-    let st = init_staking(&sys, 1337, 228);
+    let _st_token = init_staking_token(&sys, 1337, 1010);
+    let _rw_token = init_reward_token(&sys, 228, 1010);
+    let st = init_staking(&sys, 1010, 1337, 228);
 
     let time = sys.block_timestamp();
 
