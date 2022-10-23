@@ -271,6 +271,10 @@ impl Staking {
         }
     }
 
+    /// Continues cached transaction by `transaction_id`.
+    ///
+    /// Execution makes sense if, when returning from an async message,
+    /// the gas ran out and the state has changed.
     async fn continue_transaction(&mut self, transaction_id: u64) {
         let transactions = self.transactions.clone();
         let payload = &transactions

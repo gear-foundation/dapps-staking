@@ -22,10 +22,57 @@ pub struct Staker {
 
 #[derive(Debug, Clone, Decode, Encode, TypeInfo)]
 pub enum StakingAction {
+    /// Stake provided tokens amount into staking pool.
+    ///
+    /// Requirements:
+    /// * Provided `amount` should be greater than 0;
+    ///
+    /// Arguments:
+    /// * `amount`: tokens amount.
+    ///
+    /// On success replies with [`StakingEvent::StakeAccepted`].
     Stake(u128),
+
+    /// Withdraws staked tokens.
+    ///
+    /// Requirements:
+    /// * Provided `amount` should be greater than 0;
+    /// * Staker balance should be greater or equal to `amount`;
+    ///
+    /// Arguments:
+    /// * `amount`: tokens amount.
+    ///
+    /// On success replies with [`StakingEvent::Withdrawn`].
     Withdraw(u128),
+
+    /// Updates staking contract configuration.
+    ///
+    /// Requirements:
+    /// * Should be called by `owner`;
+    /// * `reward_total` and `distribution_time`, which provided by [`InitStaking`] can't be 0;
+    ///
+    /// Arguments:
+    /// * `config`: configuration structure [`InitStaking`].
     UpdateStaking(InitStaking),
+
+    /// Picking up staking rewards.
+    ///
+    /// Requirements:
+    /// * Rewards must not be equal to 0;
+    ///
+    /// On success replies with [`StakingEvent::Reward`].
     GetReward,
+
+    /// Continues the transaction if it fails due to lack of gas
+    /// or due to an error in the token contract.
+    ///
+    /// Requirements:
+    /// * `transaction_id` should exists in `transactions` table;
+    ///
+    /// Arguments:
+    /// * `transaction_id`: Identifier of suspended transaction.
+    ///
+    /// When transaction already processed replies with [`StakingEvent::TransactionProcessed`].
     Continue(u64),
 }
 
