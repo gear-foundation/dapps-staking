@@ -83,6 +83,7 @@ pub enum StakingEvent {
     Updated,
     Reward(u64, u128),
     TransactionProcessed,
+    TransactionFailed(u64),
 }
 
 #[derive(Debug, Encode, Decode, TypeInfo, PartialEq)]

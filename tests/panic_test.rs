@@ -3,8 +3,8 @@ extern crate std;
 
 mod utils;
 
-use gtest::{Program, System};
 use gstd::Encode;
+use gtest::{Program, System};
 use staking_io::*;
 use utils::token::*;
 

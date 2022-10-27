@@ -164,6 +164,8 @@ impl Staking {
         .is_err()
         {
             self.transactions.remove(&current_transaction_id);
+            msg::reply(StakingEvent::TransactionFailed(current_transaction_id), 0)
+                .expect("Unable to reply!");
             return;
         }
 
@@ -224,6 +226,9 @@ impl Staking {
 
             msg::reply(StakingEvent::Reward(current_transaction_id, reward), 0)
                 .expect("reply: 'Reward' error");
+        } else {
+            msg::reply(StakingEvent::TransactionFailed(current_transaction_id), 0)
+                .expect("Unable to reply!");
         }
     }
 
@@ -270,6 +275,9 @@ impl Staking {
 
             msg::reply(StakingEvent::Withdrawn(current_transaction_id, amount), 0)
                 .expect("reply: 'Withdrawn' error");
+        } else {
+            msg::reply(StakingEvent::TransactionFailed(current_transaction_id), 0)
+                .expect("Unable to reply!");
         }
     }
 
