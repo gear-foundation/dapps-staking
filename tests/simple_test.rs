@@ -1,7 +1,6 @@
 mod utils;
 
-use codec::Encode;
-use gstd::{ActorId, BTreeMap};
+use gstd::{ActorId, BTreeMap, Encode};
 use gtest::{Program, System};
 use staking_io::*;
 use utils::token::*;
@@ -10,6 +9,7 @@ const USERS: &[u64] = &[1, 2, 3, 4, 5, 6, 7, 8];
 const DECIMALS_FACTOR: u128 = 10_u128.pow(20);
 
 #[derive(Debug, Default, Encode)]
+#[codec(crate = gstd::codec)]
 struct Staking {
     tokens_per_stake: u128,
     total_staked: u128,
@@ -135,7 +135,7 @@ fn calc_reward(staking: &mut Staking, source: &ActorId) -> u128 {
             - staker.distributed;
     }
 
-    panic!("calc_reward(): Staker {:?} not found", source);
+    panic!("calc_reward(): Staker {source:?} not found");
 }
 
 #[test]

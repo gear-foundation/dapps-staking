@@ -23,7 +23,7 @@ Staking is an analogue of a bank deposit, receiving passive earnings due to simp
 
 ## Prebuilt Binaries
 
-Raw, optimized, and meta WASM binaries can be found in the [Releases section](https://github.com/gear-dapps/staking/releases/tag/build).
+Raw, optimized, and meta WASM binaries can be found in the [Releases section](https://github.com/gear-dapps/staking/releases).
 
 ## Building Locally
 
@@ -84,4 +84,4 @@ make
 
 ## License
 
-The source code is licensed under [GPL v3.0 license](LICENSE).
+The source code is licensed under the [MIT license](LICENSE).
