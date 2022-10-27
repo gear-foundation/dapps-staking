@@ -7,8 +7,6 @@ authors = ["Gear Technologies"]
 
 [dependencies]
 gstd = { git = "https://github.com/gear-tech/gear.git", features = ["debug"], rev = "d4552434" }
-#codec = { package = "parity-scale-codec", version = "3.1.2", default-features = false }
-#scale-info = { version = "2.2.0", default-features = false }
 staking-io = { path = "io" }
 ft-io = { git = "https://github.com/gear-dapps/fungible-token.git", tag = "0.1.2" }
 
