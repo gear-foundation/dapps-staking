@@ -36,7 +36,7 @@ fn init_staking(sys: &System) {
 }
 
 fn init_staking_token(sys: &System) {
-    let st_token = Program::from_file(sys, "./target/fungible_token-0.1.3.wasm");
+    let st_token = Program::from_file(sys, "./target/wasm32-unknown-unknown/debug/ft_main.wasm");
 
     let res = st_token.send(
         USERS[3],
