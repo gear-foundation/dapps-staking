@@ -14,6 +14,16 @@ scale-info = { version = "2.3.1", default-features = false }
 [dev-dependencies]
 gstd = { git = "https://github.com/gear-tech/gear.git", branch = "stable", features = ["debug"] }
 gtest = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
+sp-core = { version = "6.0.0", git = "https://github.com/gear-tech/substrate.git", branch = "gear-stable" }
+gclient = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
+tokio = { version = "1.21.2", features = ["full"] }
+
 
 [build-dependencies]
 gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
+
+
+[patch.crates-io]
+# Two dependecies below goes for subxt v0.22.0
+sp-core = { version = "6.0.0", git = "https://github.com/gear-tech/substrate.git", branch = "gear-stable" }
+sp-runtime = { version = "6.0.0", git = "https://github.com/gear-tech/substrate.git", branch = "gear-stable" }
