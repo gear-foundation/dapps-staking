@@ -1,5 +1,5 @@
 use gclient::{EventProcessor, GearApi, Result};
-use gstd::{ActorId, Encode};
+use gstd::Encode;
 use staking::io::InitStaking;
 
 #[cfg(debug_assertions)]
@@ -39,7 +39,7 @@ async fn init() -> Result<()> {
         )
         .await?;
 
-    let (message_id, program_id, _hash) = api
+    let (message_id, _program_id, _hash) = api
         .upload_program_bytes_by_path(
             PATH,
             gclient::bytes_now(),
