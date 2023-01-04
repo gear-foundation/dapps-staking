@@ -171,7 +171,7 @@ fn update_reward(staking: &mut Staking, time: u64) {
     }
 }
 
-/// Calculates the reward of the staker that is currently avaiable
+/// Calculates the reward of the staker that is currently available
 fn calc_reward(staking: &mut Staking, source: &ActorId) -> u128 {
     if let Some(staker) = staking.stakers.get(source) {
         return get_max_reward(staking, staker.balance) + staker.reward_allowed
@@ -451,7 +451,7 @@ fn meta_tests() {
     );
 
     staking.total_staked = 3500;
-    let stakers = Vec::from_iter(staking.stakers.clone().into_iter());
+    let stakers = staking.stakers.clone().into_iter().collect();
     assert_eq!(
         st.meta_state::<_, StakingStateReply>(StakingState::GetStakers)
             .expect("StakingState::GetStakers failure"),

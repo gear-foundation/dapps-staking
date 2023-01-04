@@ -89,7 +89,7 @@ impl Staking {
         (amount * self.tokens_per_stake) / DECIMALS_FACTOR
     }
 
-    /// Calculates the reward of the staker that is currently avaiable
+    /// Calculates the reward of the staker that is currently available
     /// The return value cannot be less than zero according to the algorithm
     fn calc_reward(&mut self) -> u128 {
         let staker = self
