@@ -1,4 +1,18 @@
+#![no_std]
+
+use gmeta::{In, InOut, Metadata};
 use gstd::{prelude::*, ActorId};
+
+pub struct StakingMetadata;
+
+impl Metadata for StakingMetadata {
+    type Init = In<InitStaking>;
+    type Handle = InOut<StakingAction, StakingEvent>;
+    type Others = ();
+    type Reply = ();
+    type Signal = ();
+    type State = StakingStateReply;
+}
 
 #[derive(Debug, Decode, Encode, TypeInfo)]
 pub struct InitStaking {
