@@ -36,7 +36,7 @@ test: build
 			-O "./target/fungible_token-0.1.3.wasm";\
 	fi
 	@echo ⚙️ Building a release...
-	@cargo +nightly --release
+	@cargo +nightly test --release
 
 node-test:
 	@if [ ! -f "./target/fungible_token-0.1.3.wasm" ]; then\

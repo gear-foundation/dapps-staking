@@ -270,13 +270,36 @@ extern "C" fn meta_state() -> *mut [i32; 2] {
 }
 
 fn common_state() -> <StakingMetadata as Metadata>::State {
-    let stakers = static_mut_state()
-        .stakers
-        .iter()
-        .map(|(k, v)| (*k, v.clone()))
-        .collect();
+    let state = static_mut_state();
+    let stakers = state.stakers.iter().map(|(k, v)| (*k, v.clone())).collect();
 
-    StakingStateReply::Stakers(stakers)
+    let Staking {
+        owner,
+        staking_token_address,
+        reward_token_address,
+        tokens_per_stake,
+        total_staked,
+        distribution_time,
+        produced_time,
+        reward_total,
+        all_produced,
+        reward_produced,
+        ..
+    } = state.clone();
+
+    IoStaking {
+        owner,
+        staking_token_address,
+        reward_token_address,
+        tokens_per_stake,
+        total_staked,
+        distribution_time,
+        produced_time,
+        reward_total,
+        all_produced,
+        reward_produced,
+        stakers,
+    }
 }
 
 fn static_mut_state() -> &'static mut Staking {
