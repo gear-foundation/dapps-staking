@@ -6,16 +6,16 @@ license = "MIT"
 authors = ["Gear Technologies"]
 
 [dependencies]
-gstd = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
+gstd = { git = "https://github.com/gear-tech/gear.git" }
 codec = { package = "parity-scale-codec", version = "3.2.1", default-features = false }
 staking-io = { path = "io" }
-ft-io = { git = "https://github.com/gear-dapps/fungible-token.git", tag = "0.1.3" }
+ft-io = { git = "https://github.com/gear-dapps/fungible-token.git", branch = "new_meta" }
 scale-info = { version = "2.3.1", default-features = false }
 hashbrown = "0.13.1"
 gmeta = { git = "https://github.com/gear-tech/gear", features = ["codegen"] }
 
 [dev-dependencies]
-gstd = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
+gstd = { git = "https://github.com/gear-tech/gear.git" }
 gtest = { git = "https://github.com/gear-tech/gear.git", branch = "stable" }
 sp-core = { git = "https://github.com/gear-tech/substrate.git", branch = "gear-stable" }
 gclient = { git = "https://github.com/gear-tech/gear.git" }

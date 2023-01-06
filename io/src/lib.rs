@@ -74,4 +74,3 @@ pub struct IoStaking {
     pub reward_produced: u128,
     pub stakers: Vec<(ActorId, Staker)>,
 }
-
