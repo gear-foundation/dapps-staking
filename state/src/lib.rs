@@ -9,7 +9,7 @@ pub trait Metawasm {
     type State = <StakingMetadata as Metadata>::State;
 
     fn get_stakers(state: Self::State) -> Vec<(ActorId, Staker)> {
-        state.stakers.clone()
+        state.stakers
     }
 
     fn get_staker(address: ActorId, state: Self::State) -> Staker {
