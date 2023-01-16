@@ -44,13 +44,10 @@ jobs:
 
       - name: Run tests
         run: |
-          wget https://get.gear.rs/gear-nightly-linu\x-x86_64.tar.xz && tar xvf gear-nightly-linux-x86_64.tar.xz && rm gear-nightly-linux-x86_64.tar.xz
-          chmod +x gear
+          curl -L https://get.gear.rs/gear-nightly-linux-x86_64.tar.xz -o - | tar xJ
           ./gear --tmp --dev &> /dev/null & echo -n $! > gear.pid
           make full-test
           kill `cat gear.pid`
-          rm gear.pid
-          rm gear
 
       - name: Build
         run: make build

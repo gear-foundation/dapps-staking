@@ -46,14 +46,6 @@ test: deps
 	@echo ⚙️ Running unit tests...
 	@cargo +nightly t
 
-node-test: deps
-	wget https://get.gear.rs/gear-nightly-linu\x-x86_64.tar.xz && \
-	tar xvf gear-nightly-linux-x86_64.tar.xz && \
-	rm gear-nightly-linux-x86_64.tar.xz
-	@./gear --dev --tmp > /dev/null 2>&1  & echo "$$!" > gear.pid
-	cat gear.pid;
-	@cargo test -Fbinary-vendor --package staking --test node_test -- --include-ignored --test-threads=1; 	kill `(cat gear.pid)`; rm gear; rm gear.pid
-
 full-test: deps
 	@echo ⚙️ Running all tests...
 	@cargo +nightly t -Fbinary-vendor -- --include-ignored --test-threads=1
