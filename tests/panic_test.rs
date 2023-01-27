@@ -116,7 +116,10 @@ fn stake() {
     let staking = sys.get_program(1);
 
     let res = staking.send(USERS[4], StakingAction::Stake(0));
-    assert!(res.main_failed());
+    assert!(res.contains(&(
+        USERS[4],
+        Err::<StakingEvent, Error>(Error::NullAmount).encode()
+    )));
 }
 
 #[test]
@@ -135,7 +138,10 @@ fn update_staking() {
             reward_total: 1000,
         }),
     );
-    assert!(res.main_failed());
+    assert!(res.contains(&(
+        USERS[4],
+        Err::<StakingEvent, Error>(Error::NotOwner).encode()
+    )));
 
     let res = staking.send(
         USERS[3],
@@ -146,7 +152,10 @@ fn update_staking() {
             reward_total: 0,
         }),
     );
-    assert!(res.main_failed());
+    assert!(res.contains(&(
+        USERS[3],
+        Err::<StakingEvent, Error>(Error::NullReward).encode()
+    )));
 
     let res = staking.send(
         USERS[3],
@@ -157,7 +166,11 @@ fn update_staking() {
             reward_total: 1000,
         }),
     );
-    assert!(res.main_failed());
+    println!("{:?}", res.decoded_log::<Result<StakingEvent, Error>>());
+    assert!(res.contains(&(
+        USERS[3],
+        Err::<StakingEvent, Error>(Error::NullTime).encode()
+    )));
 }
 
 #[test]
@@ -170,7 +183,11 @@ fn send_reward() {
     let staking = sys.get_program(1);
 
     let res = staking.send(USERS[4], StakingAction::GetReward);
-    assert!(res.main_failed());
+
+    assert!(res.contains(&(
+        USERS[4],
+        Err::<StakingEvent, Error>(Error::StakerNotFound).encode()
+    )));
 }
 
 #[test]
@@ -184,17 +201,32 @@ fn withdraw() {
     let staking = sys.get_program(1);
 
     let res = staking.send(USERS[4], StakingAction::Stake(1500));
-    assert!(res.contains(&(USERS[4], StakingEvent::StakeAccepted(1500).encode())));
+    assert!(res.contains(&(
+        USERS[4],
+        Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(1500)).encode()
+    )));
 
     let res = staking.send(USERS[5], StakingAction::Stake(2000));
-    assert!(res.contains(&(USERS[5], StakingEvent::StakeAccepted(2000).encode())));
+    assert!(res.contains(&(
+        USERS[5],
+        Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(2000)).encode()
+    )));
 
     let res = staking.send(USERS[4], StakingAction::Withdraw(0));
-    assert!(res.main_failed());
+    assert!(res.contains(&(
+        USERS[4],
+        Err::<StakingEvent, Error>(Error::NullAmount).encode()
+    )));
 
     let res = staking.send(USERS[6], StakingAction::Withdraw(1000));
-    assert!(res.main_failed());
+    assert!(res.contains(&(
+        USERS[6],
+        Err::<StakingEvent, Error>(Error::StakerNotFound).encode()
+    )));
 
     let res = staking.send(USERS[5], StakingAction::Withdraw(5000));
-    assert!(res.main_failed());
+    assert!(res.contains(&(
+        USERS[5],
+        Err::<StakingEvent, Error>(Error::InsufficentBalance).encode()
+    )));
 }

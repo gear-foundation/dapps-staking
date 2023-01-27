@@ -3,18 +3,20 @@
 use gmeta::{In, InOut, Metadata};
 use gstd::{prelude::*, ActorId};
 
+pub type TransactionId = u64;
+
 pub struct StakingMetadata;
 
 impl Metadata for StakingMetadata {
     type Init = In<InitStaking>;
-    type Handle = InOut<StakingAction, StakingEvent>;
+    type Handle = InOut<StakingAction, Result<StakingEvent, Error>>;
     type Others = ();
     type Reply = ();
     type Signal = ();
     type State = IoStaking;
 }
 
-#[derive(Debug, Decode, Encode, TypeInfo)]
+#[derive(Debug, Clone, Decode, Encode, TypeInfo, PartialEq, Eq)]
 pub struct InitStaking {
     pub staking_token_address: ActorId,
     pub reward_token_address: ActorId,
@@ -30,7 +32,7 @@ pub struct Staker {
     pub distributed: u128,
 }
 
-#[derive(Debug, Decode, Encode, TypeInfo)]
+#[derive(Debug, Clone, Decode, Encode, TypeInfo, PartialEq, Eq)]
 pub enum StakingAction {
     Stake(u128),
     Withdraw(u128),
@@ -59,8 +61,6 @@ pub enum StakingStateReply {
 }
 
 #[derive(Debug, Clone, Default, Encode, Decode, TypeInfo)]
-#[codec(crate = gstd::codec)]
-#[scale_info(crate = gstd::scale_info)]
 pub struct IoStaking {
     pub owner: ActorId,
     pub staking_token_address: ActorId,
@@ -73,4 +73,24 @@ pub struct IoStaking {
     pub all_produced: u128,
     pub reward_produced: u128,
     pub stakers: Vec<(ActorId, Staker)>,
+    pub transactions: BTreeMap<ActorId, Transaction<StakingAction>>,
+    pub current_tid: TransactionId,
+}
+
+#[derive(Debug, Clone, Encode, Decode, TypeInfo)]
+pub enum Error {
+    NullAmount,
+    NullReward,
+    NullTime,
+    TransferTokens,
+    PreviousTxMustBeCompleted,
+    InsufficentBalance,
+    NotOwner,
+    StakerNotFound,
+}
+
+#[derive(Debug, Clone, Encode, Decode, TypeInfo)]
+pub struct Transaction<T> {
+    pub id: TransactionId,
+    pub action: T,
 }

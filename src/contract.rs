@@ -1,6 +1,11 @@
 use ft_io::*;
 use gmeta::Metadata;
-use gstd::{errors::Result as GstdResult, exec, msg, prelude::*, ActorId, MessageId};
+use gstd::{
+    errors::{ContractError, Result as GstdResult},
+    exec, msg,
+    prelude::*,
+    ActorId, MessageId,
+};
 use hashbrown::HashMap;
 use staking_io::*;
 
@@ -17,6 +22,9 @@ struct Staking {
     all_produced: u128,
     reward_produced: u128,
     stakers: HashMap<ActorId, Staker>,
+
+    transactions: BTreeMap<ActorId, Transaction<StakingAction>>,
+    current_tid: TransactionId,
 }
 
 static mut STAKING: Option<Staking> = None;
@@ -32,7 +40,7 @@ async fn transfer_tokens(
     from: &ActorId,
     to: &ActorId,
     amount_tokens: u128,
-) {
+) -> Result<Vec<u8>, ContractError> {
     msg::send_for_reply(
         *token_address,
         FTAction::Transfer {
@@ -44,7 +52,6 @@ async fn transfer_tokens(
     )
     .expect("Error in sending message")
     .await
-    .expect("Error in transfer");
 }
 
 impl Staking {
@@ -88,31 +95,29 @@ impl Staking {
 
     /// Calculates the reward of the staker that is currently available
     /// The return value cannot be less than zero according to the algorithm
-    fn calc_reward(&mut self) -> u128 {
-        let staker = self
-            .stakers
-            .get(&msg::source())
-            .unwrap_or_else(|| panic!("calc_reward(): Staker {:?} not found", msg::source()));
-
-        self.get_max_reward(staker.balance) + staker.reward_allowed
-            - staker.reward_debt
-            - staker.distributed
+    fn calc_reward(&mut self) -> Result<u128, Error> {
+        match self.stakers.get(&msg::source()) {
+            Some(staker) => Ok(self.get_max_reward(staker.balance) + staker.reward_allowed
+                - staker.reward_debt
+                - staker.distributed),
+            None => Err(Error::StakerNotFound),
+        }
     }
 
     /// Updates the staking contract.
     /// Sets the reward to be distributed within distribution time
     /// param 'config' - updated configuration
-    fn update_staking(&mut self, config: InitStaking) {
+    fn update_staking(&mut self, config: InitStaking) -> Result<StakingEvent, Error> {
         if msg::source() != self.owner {
-            panic!("update_staking(): only the owner can update the staking");
+            return Err(Error::NotOwner);
         }
 
         if config.reward_total == 0 {
-            panic!("update_staking(): reward_total is null");
+            return Err(Error::NullReward);
         }
 
         if config.distribution_time == 0 {
-            panic!("update_staking(): distribution_time is null");
+            return Err(Error::NullTime);
         }
 
         self.staking_token_address = config.staking_token_address;
@@ -123,19 +128,26 @@ impl Staking {
         self.all_produced = self.reward_produced;
         self.produced_time = exec::block_timestamp();
         self.reward_total = config.reward_total;
+
+        Ok(StakingEvent::Updated)
     }
 
     /// Stakes the tokens
     /// Arguments:
     /// `amount`: the number of tokens for the stake
-    async fn stake(&mut self, amount: u128) {
+    async fn stake(&mut self, amount: u128) -> Result<StakingEvent, Error> {
         if amount == 0 {
-            panic!("stake(): amount is null");
+            return Err(Error::NullAmount);
         }
 
         let token_address = self.staking_token_address;
 
-        transfer_tokens(&token_address, &msg::source(), &exec::program_id(), amount).await;
+        if let Err(e) =
+            transfer_tokens(&token_address, &msg::source(), &exec::program_id(), amount).await
+        {
+            gstd::debug!("{}", e);
+            return Err(Error::TransferTokens);
+        }
 
         self.update_reward();
         let amount_per_token = self.get_max_reward(amount);
@@ -153,57 +165,67 @@ impl Staking {
             });
 
         self.total_staked = self.total_staked.saturating_add(amount);
-        msg::reply(StakingEvent::StakeAccepted(amount), 0).expect("reply: 'StakeAccepted' error");
+        Ok(StakingEvent::StakeAccepted(amount))
     }
 
     ///Sends reward to the staker
-    async fn send_reward(&mut self) {
+    async fn send_reward(&mut self) -> Result<StakingEvent, Error> {
         self.update_reward();
-        let reward = self.calc_reward();
+        let reward = self.calc_reward()?;
 
         if reward == 0 {
-            panic!("send_reward(): reward is null");
+            return Err(Error::NullReward);
         }
 
         let token_address = self.reward_token_address;
 
-        transfer_tokens(&token_address, &exec::program_id(), &msg::source(), reward).await;
+        if let Err(e) =
+            transfer_tokens(&token_address, &exec::program_id(), &msg::source(), reward).await
+        {
+            gstd::debug!("{}", e);
+            return Err(Error::TransferTokens);
+        }
 
         self.stakers
             .entry(msg::source())
             .and_modify(|stake| stake.distributed = stake.distributed.saturating_add(reward));
 
-        msg::reply(StakingEvent::Reward(reward), 0).expect("reply: 'Reward' error");
+        Ok(StakingEvent::Reward(reward))
     }
 
     /// Withdraws the staked the tokens
     /// Arguments:
     /// `amount`: the number of withdrawn tokens
-    async fn withdraw(&mut self, amount: u128) {
+    async fn withdraw(&mut self, amount: u128) -> Result<StakingEvent, Error> {
         if amount == 0 {
-            panic!("withdraw(): amount is null");
+            return Err(Error::NullAmount);
         }
 
         self.update_reward();
         let amount_per_token = self.get_max_reward(amount);
 
-        let staker = self
-            .stakers
-            .get_mut(&msg::source())
-            .unwrap_or_else(|| panic!("withdraw(): Staker {:?} not found", msg::source()));
+        let staker = match self.stakers.get_mut(&msg::source()) {
+            Some(staker) => staker,
+            None => return Err(Error::StakerNotFound),
+        };
 
         if staker.balance < amount {
-            panic!("withdraw(): staker.balance < amount");
+            return Err(Error::InsufficentBalance);
         }
 
         let token_address = self.staking_token_address;
-        transfer_tokens(&token_address, &exec::program_id(), &msg::source(), amount).await;
+        if let Err(e) =
+            transfer_tokens(&token_address, &exec::program_id(), &msg::source(), amount).await
+        {
+            gstd::debug!("{}", e);
+            return Err(Error::TransferTokens);
+        }
 
         staker.reward_allowed = staker.reward_allowed.saturating_add(amount_per_token);
         staker.balance = staker.balance.saturating_sub(amount);
         self.total_staked = self.total_staked.saturating_sub(amount);
 
-        msg::reply(StakingEvent::Withdrawn(amount), 0).expect("reply: 'Withdrawn' error");
+        Ok(StakingEvent::Withdrawn(amount))
     }
 }
 
@@ -212,25 +234,55 @@ async fn main() {
     let staking = unsafe { STAKING.get_or_insert(Staking::default()) };
 
     let action: StakingAction = msg::load().expect("Could not load Action");
+    let msg_source = msg::source();
 
-    match action {
+    let _reply: Result<StakingEvent, Error> = Err(Error::PreviousTxMustBeCompleted);
+    let _transaction_id = if let Some(Transaction {
+        id,
+        action: pend_action,
+    }) = staking.transactions.get(&msg_source)
+    {
+        if action != *pend_action {
+            reply(_reply).expect("Failed to encode or reply with `Result<StakingEvent, Error>`");
+            return;
+        }
+        *id
+    } else {
+        let transaction_id = staking.current_tid;
+        staking.current_tid = staking.current_tid.wrapping_add(1);
+        staking.transactions.insert(
+            msg_source,
+            Transaction {
+                id: transaction_id,
+                action: action.clone(),
+            },
+        );
+        transaction_id
+    };
+
+    let result = match action {
         StakingAction::Stake(amount) => {
-            staking.stake(amount).await;
+            let result = staking.stake(amount).await;
+            staking.transactions.remove(&msg_source);
+            result
         }
-
         StakingAction::Withdraw(amount) => {
-            staking.withdraw(amount).await;
+            let result = staking.withdraw(amount).await;
+            staking.transactions.remove(&msg_source);
+            result
         }
-
         StakingAction::UpdateStaking(config) => {
-            staking.update_staking(config);
-            msg::reply(StakingEvent::Updated, 0).expect("reply: 'Updated' error");
+            let result = staking.update_staking(config);
+            staking.transactions.remove(&msg_source);
+            result
         }
-
         StakingAction::GetReward => {
-            staking.send_reward().await;
+            let result = staking.send_reward().await;
+            staking.transactions.remove(&msg_source);
+            result
         }
-    }
+    };
+    reply(result).expect("Failed to encode or reply with `Result<StakingEvent, Error>`");
 }
 
 #[no_mangle]
@@ -242,7 +294,7 @@ extern "C" fn init() {
         ..Default::default()
     };
 
-    staking.update_staking(config);
+    let _ = staking.update_staking(config);
     unsafe { STAKING = Some(staking) };
 }
 
@@ -271,7 +323,6 @@ extern "C" fn meta_state() -> *mut [i32; 2] {
 
 fn common_state() -> <StakingMetadata as Metadata>::State {
     let state = static_mut_state();
-    let stakers = state.stakers.iter().map(|(k, v)| (*k, v.clone())).collect();
 
     let Staking {
         owner,
@@ -284,8 +335,12 @@ fn common_state() -> <StakingMetadata as Metadata>::State {
         reward_total,
         all_produced,
         reward_produced,
-        ..
+        stakers,
+        transactions,
+        current_tid,
     } = state.clone();
+
+    let stakers = stakers.iter().map(|(k, v)| (*k, v.clone())).collect();
 
     IoStaking {
         owner,
@@ -299,6 +354,8 @@ fn common_state() -> <StakingMetadata as Metadata>::State {
         all_produced,
         reward_produced,
         stakers,
+        transactions,
+        current_tid,
     }
 }
 

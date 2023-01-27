@@ -192,10 +192,16 @@ fn stake() {
     let staking = sys.get_program(1);
 
     let res = staking.send(USERS[4], StakingAction::Stake(1000));
-    assert!(res.contains(&(USERS[4], StakingEvent::StakeAccepted(1000).encode())));
+    assert!(res.contains(&(
+        USERS[4],
+        Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(1000)).encode()
+    )));
 
     let res = staking.send(USERS[5], StakingAction::Stake(3000));
-    assert!(res.contains(&(USERS[5], StakingEvent::StakeAccepted(3000).encode())));
+    assert!(res.contains(&(
+        USERS[5],
+        Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(3000)).encode()
+    )));
 }
 
 #[test]
@@ -216,7 +222,10 @@ fn update_staking_test() {
             reward_total: 1000,
         }),
     );
-    assert!(res.contains(&(USERS[3], StakingEvent::Updated.encode())));
+    assert!(res.contains(&(
+        USERS[3],
+        Ok::<StakingEvent, Error>(StakingEvent::Updated).encode()
+    )));
 }
 
 #[test]
@@ -237,7 +246,10 @@ fn send_reward() {
     update_staking(&mut staking, 1000, time);
 
     let res = st.send(USERS[4], StakingAction::Stake(1500));
-    assert!(res.contains(&(USERS[4], StakingEvent::StakeAccepted(1500).encode())));
+    assert!(res.contains(&(
+        USERS[4],
+        Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(1500)).encode()
+    )));
 
     update_reward(&mut staking, time);
     staking.stakers.insert(
@@ -254,7 +266,10 @@ fn send_reward() {
     sys.spend_blocks(2);
 
     let res = st.send(USERS[5], StakingAction::Stake(2000));
-    assert!(res.contains(&(USERS[5], StakingEvent::StakeAccepted(2000).encode())));
+    assert!(res.contains(&(
+        USERS[5],
+        Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(2000)).encode()
+    )));
 
     update_reward(&mut staking, time + 2000);
     staking.stakers.insert(
@@ -285,7 +300,10 @@ fn send_reward() {
         reward,
         staking
     );
-    assert!(res.contains(&(USERS[4], StakingEvent::Reward(reward).encode())));
+    assert!(res.contains(&(
+        USERS[4],
+        Ok::<StakingEvent, Error>(StakingEvent::Reward(reward)).encode()
+    )));
 
     sys.spend_blocks(1);
 
@@ -304,7 +322,10 @@ fn send_reward() {
         reward,
         staking
     );
-    assert!(res.contains(&(USERS[5], StakingEvent::Reward(reward).encode())));
+    assert!(res.contains(&(
+        USERS[5],
+        Ok::<StakingEvent, Error>(StakingEvent::Reward(reward)).encode()
+    )));
 }
 
 #[test]
@@ -326,7 +347,10 @@ fn withdraw() {
     update_staking(&mut staking, 1000, time);
 
     let res = st.send(USERS[4], StakingAction::Stake(1500));
-    assert!(res.contains(&(USERS[4], StakingEvent::StakeAccepted(1500).encode())));
+    assert!(res.contains(&(
+        USERS[4],
+        Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(1500)).encode()
+    )));
 
     update_reward(&mut staking, time);
     staking.stakers.insert(
@@ -343,7 +367,10 @@ fn withdraw() {
     sys.spend_blocks(2);
 
     let res = st.send(USERS[5], StakingAction::Stake(2000));
-    assert!(res.contains(&(USERS[5], StakingEvent::StakeAccepted(2000).encode())));
+    assert!(res.contains(&(
+        USERS[5],
+        Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(2000)).encode()
+    )));
 
     update_reward(&mut staking, time + 2000);
     staking.stakers.insert(
@@ -360,7 +387,10 @@ fn withdraw() {
     sys.spend_blocks(1);
 
     let res = st.send(USERS[4], StakingAction::Withdraw(500));
-    assert!(res.contains(&(USERS[4], StakingEvent::Withdrawn(500).encode())));
+    assert!(res.contains(&(
+        USERS[4],
+        Ok::<StakingEvent, Error>(StakingEvent::Withdrawn(500)).encode()
+    )));
 
     update_reward(&mut staking, time + 3000);
     let max_reward = get_max_reward(&staking, 500);
@@ -384,7 +414,10 @@ fn withdraw() {
         .and_modify(|stake| stake.distributed = stake.distributed.saturating_add(reward));
 
     let res = st.send(USERS[4], StakingAction::GetReward);
-    assert!(res.contains(&(USERS[4], StakingEvent::Reward(reward).encode())));
+    assert!(res.contains(&(
+        USERS[4],
+        Ok::<StakingEvent, Error>(StakingEvent::Reward(reward)).encode()
+    )));
     println!("Reward[4]: {:?}", res.decoded_log::<StakingEvent>());
 
     sys.spend_blocks(2);
@@ -398,7 +431,10 @@ fn withdraw() {
         .and_modify(|stake| stake.distributed = stake.distributed.saturating_add(reward));
 
     let res = st.send(USERS[5], StakingAction::GetReward);
-    assert!(res.contains(&(USERS[5], StakingEvent::Reward(reward).encode())));
+    assert!(res.contains(&(
+        USERS[5],
+        Ok::<StakingEvent, Error>(StakingEvent::Reward(reward)).encode()
+    )));
     println!("Reward[5]: {:?}", res.decoded_log::<StakingEvent>());
 }
 
@@ -421,7 +457,10 @@ fn meta_tests() {
     update_staking(&mut staking, 1000, time);
 
     let res = st.send(USERS[4], StakingAction::Stake(1500));
-    assert!(res.contains(&(USERS[4], StakingEvent::StakeAccepted(1500).encode())));
+    assert!(res.contains(&(
+        USERS[4],
+        Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(1500)).encode()
+    )));
 
     update_reward(&mut staking, time);
     staking.stakers.insert(
@@ -438,7 +477,10 @@ fn meta_tests() {
     sys.spend_blocks(2);
 
     let res = st.send(USERS[5], StakingAction::Stake(2000));
-    assert!(res.contains(&(USERS[5], StakingEvent::StakeAccepted(2000).encode())));
+    assert!(res.contains(&(
+        USERS[5],
+        Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(2000)).encode()
+    )));
 
     update_reward(&mut staking, time + 2000);
     staking.stakers.insert(
