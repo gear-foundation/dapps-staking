@@ -8,9 +8,11 @@ const USERS: &[u64] = &[1, 2, 3, 4, 5, 6, 7, 8];
 #[tokio::test]
 #[ignore]
 async fn init() -> Result<()> {
-    let api = GearApi::dev().await?;
+    let api = GearApi::dev()
+        .await
+        .expect("The node must be running for a gclient test");
 
-    let mut listener = api.subscribe().await?; // Subscribing for events.
+    let mut listener = api.subscribe().await?;
 
     // Checking that blocks still running.
     assert!(listener.blocks_running().await?);
@@ -37,7 +39,7 @@ async fn init() -> Result<()> {
     let (message_id, _program_id, _hash) = api
         .upload_program_bytes(
             WASM_BINARY_OPT.to_vec(),
-            gclient::now_in_micros().to_le_bytes(),
+            gclient::now_micros().to_le_bytes(),
             staking_payload,
             gas_info.min_limit,
             0,
@@ -81,7 +83,7 @@ async fn stake_failed() -> Result<()> {
     let (message_id, _program_id, _hash) = api
         .upload_program_bytes(
             WASM_BINARY_OPT.to_vec(),
-            gclient::now_in_micros().to_le_bytes(),
+            gclient::now_micros().to_le_bytes(),
             init_staking_payload,
             gas_info.min_limit,
             0,
@@ -103,7 +105,7 @@ async fn stake_failed() -> Result<()> {
     let (message_id, _program_id, _hash) = api
         .upload_program_bytes(
             WASM_BINARY_OPT.to_vec(),
-            gclient::now_in_micros().to_le_bytes(),
+            gclient::now_micros().to_le_bytes(),
             stake_payload,
             gas_info.min_limit,
             0,

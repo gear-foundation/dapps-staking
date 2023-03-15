@@ -19,7 +19,7 @@ gmeta = { git = "https://github.com/gear-tech/gear", branch = "testnet" }
 gstd = { git = "https://github.com/gear-tech/gear.git", features = ["debug"], branch = "testnet" }
 gtest = { git = "https://github.com/gear-tech/gear.git", branch = "testnet" }
 sp-core = { git = "https://github.com/gear-tech/substrate.git", branch = "gear-stable" }
-gclient = { git = "https://github.com/gear-tech/gear.git", branch = "testnet" }
+gclient = { git = "https://github.com/gear-tech/gear.git" }
 tokio = "1"
 
 [build-dependencies]

@@ -1026,13 +1026,14 @@ dependencies = [
 [[package]]
 name = "gclient"
 version = "0.1.0"
-source = "git+https://github.com/gear-tech/gear?branch=testnet#0834ce880816b2c038aa8319640d2a286db1d695"
+source = "git+https://github.com/gear-tech/gear.git#8020c4177713f5c02504c7ee22fb564c287d93e0"
 dependencies = [
  "anyhow",
  "async-trait",
  "futures",
  "futures-timer",
- "gear-core",
+ "gear-core 0.1.0 (git+https://github.com/gear-tech/gear.git)",
+ "gear-utils",
  "gsdk",
  "hex",
  "parity-scale-codec",
@@ -1047,7 +1048,7 @@ name = "gcore"
 version = "0.1.0"
 source = "git+https://github.com/gear-tech/gear?branch=testnet#0834ce880816b2c038aa8319640d2a286db1d695"
 dependencies = [
- "gear-core-errors",
+ "gear-core-errors 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
  "gsys",
  "parity-scale-codec",
  "static_assertions",
@@ -1059,9 +1060,9 @@ version = "0.1.0"
 source = "git+https://github.com/gear-tech/gear?branch=testnet#0834ce880816b2c038aa8319640d2a286db1d695"
 dependencies = [
  "derive_more",
- "gear-core",
- "gear-core-errors",
- "gear-wasm-instrument",
+ "gear-core 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
+ "gear-core-errors 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
+ "gear-wasm-instrument 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
  "log",
  "parity-scale-codec",
  "scale-info",
@@ -1075,9 +1076,9 @@ dependencies = [
  "blake2-rfc",
  "derive_more",
  "gear-backend-common",
- "gear-core",
- "gear-core-errors",
- "gear-wasm-instrument",
+ "gear-core 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
+ "gear-core-errors 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
+ "gear-wasm-instrument 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
  "gsys",
  "log",
  "parity-scale-codec",
@@ -1091,8 +1092,26 @@ source = "git+https://github.com/gear-tech/gear?branch=testnet#0834ce880816b2c03
 dependencies = [
  "blake2-rfc",
  "derive_more",
- "gear-core-errors",
- "gear-wasm-instrument",
+ "gear-core-errors 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
+ "gear-wasm-instrument 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
+ "hashbrown 0.13.2",
+ "hex",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "static_assertions",
+ "wasmparser-nostd 0.100.1",
+]
+
+[[package]]
+name = "gear-core"
+version = "0.1.0"
+source = "git+https://github.com/gear-tech/gear.git#8020c4177713f5c02504c7ee22fb564c287d93e0"
+dependencies = [
+ "blake2-rfc",
+ "derive_more",
+ "gear-core-errors 0.1.0 (git+https://github.com/gear-tech/gear.git)",
+ "gear-wasm-instrument 0.1.0 (git+https://github.com/gear-tech/gear.git)",
  "hashbrown 0.13.2",
  "hex",
  "log",
@@ -1114,19 +1133,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "gear-core-errors"
+version = "0.1.0"
+source = "git+https://github.com/gear-tech/gear.git#8020c4177713f5c02504c7ee22fb564c287d93e0"
+dependencies = [
+ "derive_more",
+ "enum-iterator",
+]
+
+[[package]]
 name = "gear-core-processor"
 version = "0.1.0"
 source = "git+https://github.com/gear-tech/gear?branch=testnet#0834ce880816b2c038aa8319640d2a286db1d695"
 dependencies = [
  "derive_more",
  "gear-backend-common",
- "gear-core",
- "gear-core-errors",
- "gear-wasm-instrument",
+ "gear-core 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
+ "gear-core-errors 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
+ "gear-wasm-instrument 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
  "log",
  "parity-scale-codec",
  "scale-info",
  "static_assertions",
+]
+
+[[package]]
+name = "gear-utils"
+version = "0.1.0"
+source = "git+https://github.com/gear-tech/gear.git#8020c4177713f5c02504c7ee22fb564c287d93e0"
+dependencies = [
+ "env_logger",
+ "nonempty",
 ]
 
 [[package]]
@@ -1137,7 +1174,7 @@ dependencies = [
  "anyhow",
  "cargo_metadata",
  "colored",
- "gear-wasm-instrument",
+ "gear-wasm-instrument 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
  "gmeta",
  "log",
  "pathdiff",
@@ -1151,6 +1188,15 @@ dependencies = [
 name = "gear-wasm-instrument"
 version = "0.1.0"
 source = "git+https://github.com/gear-tech/gear?branch=testnet#0834ce880816b2c038aa8319640d2a286db1d695"
+dependencies = [
+ "enum-iterator",
+ "wasm-instrument",
+]
+
+[[package]]
+name = "gear-wasm-instrument"
+version = "0.1.0"
+source = "git+https://github.com/gear-tech/gear.git#8020c4177713f5c02504c7ee22fb564c287d93e0"
 dependencies = [
  "enum-iterator",
  "wasm-instrument",
@@ -1249,14 +1295,14 @@ dependencies = [
 [[package]]
 name = "gsdk"
 version = "0.1.0"
-source = "git+https://github.com/gear-tech/gear?branch=testnet#0834ce880816b2c038aa8319640d2a286db1d695"
+source = "git+https://github.com/gear-tech/gear.git#8020c4177713f5c02504c7ee22fb564c287d93e0"
 dependencies = [
  "anyhow",
  "async-recursion",
  "base64 0.21.0",
  "futures",
  "futures-util",
- "gear-core",
+ "gear-core 0.1.0 (git+https://github.com/gear-tech/gear.git)",
  "hex",
  "jsonrpsee",
  "log",
@@ -1279,7 +1325,7 @@ dependencies = [
  "futures",
  "galloc",
  "gcore",
- "gear-core-errors",
+ "gear-core-errors 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
  "gstd-codegen",
  "hashbrown 0.13.2",
  "hex",
@@ -1315,11 +1361,11 @@ dependencies = [
  "env_logger",
  "gear-backend-common",
  "gear-backend-wasmi",
- "gear-core",
- "gear-core-errors",
+ "gear-core 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
+ "gear-core-errors 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
  "gear-core-processor",
  "gear-wasm-builder",
- "gear-wasm-instrument",
+ "gear-wasm-instrument 0.1.0 (git+https://github.com/gear-tech/gear?branch=testnet)",
  "hex",
  "log",
  "parity-scale-codec",
@@ -1981,6 +2027,12 @@ name = "nohash-hasher"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2bf50223579dc7cdcfb3bfcacf7069ff68243f8c363f62ffa99cf000a6b9c451"
+
+[[package]]
+name = "nonempty"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aeaf4ad7403de93e699c191202f017118df734d3850b01e13a3a8b2e6953d3c9"
 
 [[package]]
 name = "num-bigint"
