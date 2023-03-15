@@ -39,17 +39,17 @@ deps:
 	@mkdir -p target; 
 	@if [ ! -f "./target/ft_main.opt.wasm" ]; then\
 	    curl -L\
-	        "https://github.com/gear-dapps/sharded-fungible-token/releases/download/0.1.4/ft_main-0.1.4.opt.wasm"\
+	        "https://github.com/gear-dapps/sharded-fungible-token/releases/download/0.1.5/ft_main-0.1.5.opt.wasm"\
 	        -o "./target/ft_main.opt.wasm";\
 	fi
 	@if [ ! -f "./target/ft_logic.opt.wasm" ]; then\
 	    curl -L\
-	        "https://github.com/gear-dapps/sharded-fungible-token/releases/download/0.1.4/ft_logic-0.1.4.opt.wasm"\
+	        "https://github.com/gear-dapps/sharded-fungible-token/releases/download/0.1.5/ft_logic-0.1.5.opt.wasm"\
 	        -o "./target/ft_logic.opt.wasm";\
 	fi
 	@if [ ! -f "./target/ft_storage.opt.wasm" ]; then\
 	    curl -L\
-	        "https://github.com/gear-dapps/sharded-fungible-token/releases/download/0.1.4/ft_storage-0.1.4.opt.wasm"\
+	        "https://github.com/gear-dapps/sharded-fungible-token/releases/download/0.1.5/ft_storage-0.1.5.opt.wasm"\
 	        -o "./target/ft_storage.opt.wasm";\
 	fi
 
@@ -59,4 +59,4 @@ test: deps
 
 full-test: deps
 	@echo ⚙️ Running all tests...
-	@cargo +nightly t -Fbinary-vendor -- --include-ignored --test-threads=1
+	@cargo +nightly t -Fbinary-vendor --workspace -- --include-ignored --test-threads=1
