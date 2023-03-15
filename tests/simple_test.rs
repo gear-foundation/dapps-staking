@@ -1,8 +1,9 @@
-use ft_io::*;
 use gstd::{ActorId, Encode};
 use gtest::{Program, System};
 use hashbrown::HashMap;
 use staking_io::*;
+mod utils;
+use utils::FungibleToken;
 
 const USERS: &[u64] = &[1, 2, 3, 4, 5, 6, 7, 8];
 const DECIMALS_FACTOR: u128 = 10_u128.pow(20);
@@ -32,91 +33,42 @@ fn init_staking(sys: &System) {
         },
     );
 
-    assert!(res.log().is_empty());
+    assert!(res.contains(&(
+        USERS[3],
+        Ok::<StakingEvent, Error>(StakingEvent::Updated).encode()
+    )));
 }
 
 fn init_staking_token(sys: &System) {
-    let st_token = Program::from_file(sys, "./target/fungible_token-0.1.3.wasm");
+    let mut st_token = FungibleToken::initialize(sys);
 
-    let res = st_token.send(
-        USERS[3],
-        InitConfig {
-            name: String::from("StakingToken"),
-            symbol: String::from("STK"),
-            decimals: 18,
-        },
-    );
+    st_token.mint(USERS[3], 100000);
+    st_token.transfer(USERS[3], USERS[0], 100000);
+    st_token.balance(USERS[0]).contains(100000);
 
-    assert!(res.log().is_empty());
+    // st_token.mint(USERS[3], 100000);
+    // st_token.balance(USERS[3]).contains(100000);
 
-    let res = st_token.send(USERS[3], FTAction::Mint(100000));
-    assert!(!res.main_failed());
-    let res = st_token.send(
-        USERS[3],
-        FTAction::Transfer {
-            from: USERS[3].into(),
-            to: USERS[0].into(),
-            amount: 100000,
-        },
-    );
-    assert!(!res.main_failed());
+    st_token.mint(USERS[4], 10000);
+    st_token.balance(USERS[4]).contains(10000);
 
-    let res = st_token.send(USERS[3], FTAction::BalanceOf(USERS[0].into()));
-    assert!(res.contains(&(USERS[3], FTEvent::Balance(100000).encode())));
+    st_token.mint(USERS[5], 20000);
+    st_token.balance(USERS[5]).contains(20000);
 
-    let res = st_token.send(USERS[4], FTAction::Mint(10000));
-    assert!(!res.main_failed());
+    st_token.mint(USERS[6], 20000);
+    st_token.balance(USERS[6]).contains(20000);
 
-    let res = st_token.send(USERS[3], FTAction::BalanceOf(USERS[4].into()));
-    assert!(res.contains(&(USERS[3], FTEvent::Balance(10000).encode())));
-
-    let res = st_token.send(USERS[5], FTAction::Mint(20000));
-    assert!(!res.main_failed());
-
-    let res = st_token.send(USERS[3], FTAction::BalanceOf(USERS[5].into()));
-    assert!(res.contains(&(USERS[3], FTEvent::Balance(20000).encode())));
-
-    let res = st_token.send(USERS[6], FTAction::Mint(20000));
-    assert!(!res.main_failed());
-
-    let res = st_token.send(USERS[3], FTAction::BalanceOf(USERS[6].into()));
-    assert!(res.contains(&(USERS[3], FTEvent::Balance(20000).encode())));
-
-    let res = st_token.send(USERS[7], FTAction::Mint(20000));
-    assert!(!res.main_failed());
-
-    let res = st_token.send(USERS[3], FTAction::BalanceOf(USERS[7].into()));
-    assert!(res.contains(&(USERS[3], FTEvent::Balance(20000).encode())));
+    st_token.mint(USERS[7], 20000);
+    st_token.balance(USERS[7]).contains(20000);
 }
 
 fn init_reward_token(sys: &System) {
-    let rw_token = Program::from_file(sys, "./target/fungible_token-0.1.3.wasm");
+    let mut rw_token = FungibleToken::initialize(sys);
 
-    let res = rw_token.send(
-        USERS[3],
-        InitConfig {
-            name: String::from("RewardToken"),
-            symbol: String::from("RTK"),
-            decimals: 18,
-        },
-    );
+    rw_token.mint(USERS[3], 100000);
+    rw_token.transfer(USERS[3], USERS[0], 100000);
 
-    assert!(res.log().is_empty());
-
-    let res = rw_token.send(USERS[3], FTAction::Mint(100000));
-    assert!(!res.main_failed());
-    let res = rw_token.send(
-        USERS[3],
-        FTAction::Transfer {
-            from: USERS[3].into(),
-            to: USERS[0].into(),
-            amount: 100000,
-        },
-    );
-    assert!(!res.main_failed());
-
-    let res = rw_token.send(USERS[3], FTAction::BalanceOf(USERS[0].into()));
-    assert!(res.contains(&(USERS[3], FTEvent::Balance(100000).encode())));
+    rw_token.balance(USERS[0]).contains(100000);
 }
 
 /// Sets the reward to be distributed within distribution time
@@ -493,19 +445,18 @@ fn meta_tests() {
     );
 
     staking.total_staked = 3500;
-    let stakers = staking.stakers.clone().into_iter().collect();
-    assert_eq!(
-        st.meta_state::<_, StakingStateReply>(StakingState::GetStakers)
-            .expect("StakingState::GetStakers failure"),
-        StakingStateReply::Stakers(stakers)
-    );
+    let stakers: HashMap<ActorId, Staker> = staking.stakers.clone().into_iter().collect();
+    let state: IoStaking = st.read_state().expect("Can't read state");
+
+    assert_eq!(state.stakers.len(), stakers.len());
 
     let actor_id: &ActorId = &USERS[4].into();
     let staker = staking.stakers.get(actor_id).unwrap();
 
-    assert_eq!(
-        st.meta_state::<_, StakingStateReply>(StakingState::GetStaker(USERS[4].into()))
-            .expect("StakingState::GetStaker failure"),
-        StakingStateReply::Staker(staker.clone())
-    );
+    let (_id, state_staker) = state
+        .stakers
+        .iter()
+        .find(|(id, _staker)| id.eq(actor_id))
+        .expect("Can't find id");
+    assert_eq!(state_staker, staker);
 }

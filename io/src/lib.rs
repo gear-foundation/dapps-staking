@@ -43,9 +43,9 @@ pub enum StakingAction {
 #[derive(Debug, Encode, Decode, TypeInfo)]
 pub enum StakingEvent {
     StakeAccepted(u128),
-    Withdrawn(u128),
     Updated,
     Reward(u128),
+    Withdrawn(u128),
 }
 
 #[derive(Debug, Encode, Decode, TypeInfo, PartialEq)]
@@ -79,9 +79,9 @@ pub struct IoStaking {
 
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
 pub enum Error {
-    NullAmount,
-    NullReward,
-    NullTime,
+    ZeroAmount,
+    ZeroReward,
+    ZeroTime,
     TransferTokens,
     PreviousTxMustBeCompleted,
     InsufficentBalance,
