@@ -1,14 +1,9 @@
-#[cfg(test)]
-extern crate std;
-
 use gstd::Encode;
 use gtest::{Program, System};
 use staking_io::*;
 
 mod utils;
-use utils::FungibleToken;
-
-const USERS: &[u64] = &[1, 2, 3, 4, 5, 6, 7, 8];
+use utils::{FungibleToken, PROGRAMS, USERS};
 
 fn init_staking(sys: &System) {
     let staking = Program::current(sys);
@@ -16,8 +11,8 @@ fn init_staking(sys: &System) {
     let res = staking.send(
         USERS[3],
         InitStaking {
-            staking_token_address: USERS[1].into(),
-            reward_token_address: USERS[2].into(),
+            staking_token_address: PROGRAMS[1].into(),
+            reward_token_address: PROGRAMS[2].into(),
             distribution_time: 10000,
             reward_total: 1000,
         },
@@ -32,8 +27,7 @@ fn init_staking(sys: &System) {
 fn init_staking_token(sys: &System) {
     let mut st_token = FungibleToken::initialize(sys);
 
-    st_token.mint(USERS[3], 100000);
-    st_token.transfer(USERS[3], USERS[0], 100000);
+    st_token.mint(USERS[0], 100000);
     st_token.balance(USERS[0]).contains(100000);
 
     st_token.mint(USERS[4], 10000);
@@ -52,8 +46,7 @@ fn init_staking_token(sys: &System) {
 fn init_reward_token(sys: &System) {
     let mut rw_token = FungibleToken::initialize(sys);
 
-    rw_token.mint(USERS[3], 100000);
-    rw_token.transfer(USERS[3], USERS[0], 100000);
+    rw_token.mint(USERS[0], 100000);
 
     rw_token.balance(USERS[0]).contains(100000);
 }

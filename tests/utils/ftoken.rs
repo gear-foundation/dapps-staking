@@ -64,24 +64,6 @@ impl<'a> FungibleToken<'a> {
             FTokenEvent::Balance,
         )
     }
-
-    pub fn transfer(&mut self, from: u64, to: impl Into<ActorId>, amount: u128) {
-        let transaction_id = self.transaction_id();
-        let payload = Action::Transfer {
-            sender: from.into(),
-            recipient: to.into(),
-            amount,
-        }
-        .encode();
-        assert_ft_token_event_ok(self.inner_program().send(
-            // self.inner_program().id(),
-            from,
-            FTokenAction::Message {
-                transaction_id,
-                payload,
-            },
-        ));
-    }
 }
 
 fn assert_ft_token_event_ok(run_result: InnerRunResult) {

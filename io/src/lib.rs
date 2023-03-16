@@ -1,7 +1,7 @@
 #![no_std]
 
 use gmeta::{In, InOut, Metadata};
-use gstd::{prelude::*, ActorId};
+use gstd::{errors::ContractError, prelude::*, ActorId};
 
 pub type TransactionId = u64;
 
@@ -87,10 +87,17 @@ pub enum Error {
     InsufficentBalance,
     NotOwner,
     StakerNotFound,
+    ContractError(String),
 }
 
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
 pub struct Transaction<T> {
     pub id: TransactionId,
     pub action: T,
+}
+
+impl From<ContractError> for Error {
+    fn from(value: ContractError) -> Self {
+        Self::ContractError(value.to_string())
+    }
 }

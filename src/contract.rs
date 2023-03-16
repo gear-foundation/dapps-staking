@@ -60,11 +60,7 @@ impl Staking {
             token_address
         );
 
-        let result = msg::send_for_reply(*token_address, payload, 0)
-            .map_err(|e| {
-                gstd::debug!("Error at transfer = {:?}", e);
-                Error::TransferTokens
-            })?
+        let result = msg::send_for_reply(*token_address, payload, 0)?
             .await
             .map_err(|e| {
                 gstd::debug!("Error at await = {:?}", e);
@@ -167,11 +163,7 @@ impl Staking {
         let token_address = self.staking_token_address;
 
         self.transfer_tokens(&token_address, &msg::source(), &exec::program_id(), amount)
-            .await
-            .map_err(|e| {
-                gstd::debug!("Error = {:?}", e);
-                Error::TransferTokens
-            })?;
+            .await?;
 
         self.update_reward();
         let amount_per_token = self.get_max_reward(amount);
@@ -204,11 +196,7 @@ impl Staking {
         let token_address = self.reward_token_address;
 
         self.transfer_tokens(&token_address, &exec::program_id(), &msg::source(), reward)
-            .await
-            .map_err(|e| {
-                gstd::debug!("{:?}", e);
-                Error::TransferTokens
-            })?;
+            .await?;
 
         self.stakers
             .entry(msg::source())
@@ -239,11 +227,7 @@ impl Staking {
 
         let token_address = self.staking_token_address;
         self.transfer_tokens(&token_address, &exec::program_id(), &msg::source(), amount)
-            .await
-            .map_err(|e| {
-                gstd::debug!("{:?}", e);
-                Error::TransferTokens
-            })?;
+            .await?;
 
         let staker = self
             .stakers
