@@ -1,4 +1,4 @@
-use gstd::Encode;
+use gstd::{ActorId, Encode};
 use gtest::{Program, System};
 use staking_io::*;
 
@@ -24,7 +24,7 @@ fn init_staking(sys: &System) {
     )));
 }
 
-fn init_staking_token(sys: &System) {
+fn init_staking_token(sys: &System) -> FungibleToken {
     let mut st_token = FungibleToken::initialize(sys);
 
     st_token.mint(USERS[0], 100000);
@@ -41,6 +41,8 @@ fn init_staking_token(sys: &System) {
 
     st_token.mint(USERS[7], 20000);
     st_token.balance(USERS[7]).contains(20000);
+
+    st_token
 }
 
 fn init_reward_token(sys: &System) {
@@ -138,17 +140,20 @@ fn withdraw() {
     let sys = System::new();
 
     init_staking(&sys);
-    init_staking_token(&sys);
+    let mut st_token = init_staking_token(&sys);
     init_reward_token(&sys);
     sys.init_logger();
     let staking = sys.get_program(1);
+
+    let id: ActorId = staking.id().into_bytes().into();
+    st_token.approve(USERS[4], id, 1500);
 
     let res = staking.send(USERS[4], StakingAction::Stake(1500));
     assert!(res.contains(&(
         USERS[4],
         Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(1500)).encode()
     )));
-
+    st_token.approve(USERS[5], id, 2000);
     let res = staking.send(USERS[5], StakingAction::Stake(2000));
     assert!(res.contains(&(
         USERS[5],

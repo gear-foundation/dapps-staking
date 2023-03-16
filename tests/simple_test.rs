@@ -138,17 +138,19 @@ fn calc_reward(staking: &mut Staking, source: &ActorId) -> u128 {
 fn stake() {
     let sys = System::new();
     init_staking(&sys);
-    let st_token = init_staking_token(&sys);
-    let rw_token = init_reward_token(&sys);
+    let mut st_token = init_staking_token(&sys);
+    init_reward_token(&sys);
     sys.init_logger();
     let staking = sys.get_program(1);
 
+    let id: ActorId = staking.id().into_bytes().into();
+    st_token.approve(USERS[4], id, 1000);
     let res = staking.send(USERS[4], StakingAction::Stake(1000));
     assert!(res.contains(&(
         USERS[4],
         Ok::<StakingEvent, Error>(StakingEvent::StakeAccepted(1000)).encode()
     )));
-
+    st_token.approve(USERS[5], id, 3000);
     let res = staking.send(USERS[5], StakingAction::Stake(3000));
     assert!(res.contains(&(
         USERS[5],
@@ -184,7 +186,7 @@ fn update_staking_test() {
 fn send_reward() {
     let sys = System::new();
     init_staking(&sys);
-    init_staking_token(&sys);
+    let mut st_token = init_staking_token(&sys);
     init_reward_token(&sys);
     sys.init_logger();
     let st = sys.get_program(1);
@@ -197,6 +199,7 @@ fn send_reward() {
 
     update_staking(&mut staking, 1000, time);
 
+    st_token.approve(USERS[4], st.id().into_bytes(), 1500);
     let res = st.send(USERS[4], StakingAction::Stake(1500));
     assert!(res.contains(&(
         USERS[4],
@@ -217,6 +220,7 @@ fn send_reward() {
 
     sys.spend_blocks(2);
 
+    st_token.approve(USERS[5], st.id().into_bytes(), 2000);
     let res = st.send(USERS[5], StakingAction::Stake(2000));
     assert!(res.contains(&(
         USERS[5],
@@ -285,7 +289,7 @@ fn withdraw() {
     let sys = System::new();
 
     init_staking(&sys);
-    init_staking_token(&sys);
+    let mut st_token = init_staking_token(&sys);
     init_reward_token(&sys);
     sys.init_logger();
     let st = sys.get_program(1);
@@ -297,7 +301,8 @@ fn withdraw() {
     };
 
     update_staking(&mut staking, 1000, time);
-
+    let id: ActorId = st.id().into_bytes().into();
+    st_token.approve(USERS[4], id, 1500);
     let res = st.send(USERS[4], StakingAction::Stake(1500));
     assert!(res.contains(&(
         USERS[4],
@@ -318,6 +323,7 @@ fn withdraw() {
 
     sys.spend_blocks(2);
 
+    st_token.approve(USERS[5], st.id().into_bytes(), 2000);
     let res = st.send(USERS[5], StakingAction::Stake(2000));
     assert!(res.contains(&(
         USERS[5],
@@ -394,7 +400,7 @@ fn withdraw() {
 fn meta_tests() {
     let sys = System::new();
     init_staking(&sys);
-    init_staking_token(&sys);
+    let mut st_token = init_staking_token(&sys);
     init_reward_token(&sys);
     sys.init_logger();
     let st = sys.get_program(1);
@@ -408,6 +414,7 @@ fn meta_tests() {
 
     update_staking(&mut staking, 1000, time);
 
+    st_token.approve(USERS[4], st.id().into_bytes(), 1500);
     let res = st.send(USERS[4], StakingAction::Stake(1500));
     assert!(res.contains(&(
         USERS[4],
@@ -428,6 +435,7 @@ fn meta_tests() {
 
     sys.spend_blocks(2);
 
+    st_token.approve(USERS[5], st.id().into_bytes(), 2000);
     let res = st.send(USERS[5], StakingAction::Stake(2000));
     assert!(res.contains(&(
         USERS[5],
