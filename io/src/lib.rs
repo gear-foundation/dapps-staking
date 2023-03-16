@@ -48,18 +48,6 @@ pub enum StakingEvent {
     Withdrawn(u128),
 }
 
-#[derive(Debug, Encode, Decode, TypeInfo, PartialEq)]
-pub enum StakingState {
-    GetStakers,
-    GetStaker(ActorId),
-}
-
-#[derive(Debug, TypeInfo, Encode, Decode, PartialEq)]
-pub enum StakingStateReply {
-    Stakers(Vec<(ActorId, Staker)>),
-    Staker(Staker),
-}
-
 #[derive(Debug, Clone, Default, Encode, Decode, TypeInfo)]
 pub struct IoStaking {
     pub owner: ActorId,
