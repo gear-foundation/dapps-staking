@@ -1026,7 +1026,7 @@ dependencies = [
 [[package]]
 name = "gclient"
 version = "0.1.0"
-source = "git+https://github.com/gear-tech/gear.git#97525093e88e44954e1c8d56470c1163ce5f018c"
+source = "git+https://github.com/gear-tech/gear.git#ec972b88ce176a765497095e5bad0ab19d69f1e1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1106,7 +1106,7 @@ dependencies = [
 [[package]]
 name = "gear-core"
 version = "0.1.0"
-source = "git+https://github.com/gear-tech/gear.git#97525093e88e44954e1c8d56470c1163ce5f018c"
+source = "git+https://github.com/gear-tech/gear.git#ec972b88ce176a765497095e5bad0ab19d69f1e1"
 dependencies = [
  "blake2-rfc",
  "derive_more",
@@ -1135,7 +1135,7 @@ dependencies = [
 [[package]]
 name = "gear-core-errors"
 version = "0.1.0"
-source = "git+https://github.com/gear-tech/gear.git#97525093e88e44954e1c8d56470c1163ce5f018c"
+source = "git+https://github.com/gear-tech/gear.git#ec972b88ce176a765497095e5bad0ab19d69f1e1"
 dependencies = [
  "derive_more",
  "enum-iterator",
@@ -1160,7 +1160,7 @@ dependencies = [
 [[package]]
 name = "gear-utils"
 version = "0.1.0"
-source = "git+https://github.com/gear-tech/gear.git#97525093e88e44954e1c8d56470c1163ce5f018c"
+source = "git+https://github.com/gear-tech/gear.git#ec972b88ce176a765497095e5bad0ab19d69f1e1"
 dependencies = [
  "env_logger",
  "nonempty",
@@ -1196,7 +1196,7 @@ dependencies = [
 [[package]]
 name = "gear-wasm-instrument"
 version = "0.1.0"
-source = "git+https://github.com/gear-tech/gear.git#97525093e88e44954e1c8d56470c1163ce5f018c"
+source = "git+https://github.com/gear-tech/gear.git#ec972b88ce176a765497095e5bad0ab19d69f1e1"
 dependencies = [
  "enum-iterator",
  "wasm-instrument",
@@ -1295,7 +1295,7 @@ dependencies = [
 [[package]]
 name = "gsdk"
 version = "0.1.0"
-source = "git+https://github.com/gear-tech/gear.git#97525093e88e44954e1c8d56470c1163ce5f018c"
+source = "git+https://github.com/gear-tech/gear.git#ec972b88ce176a765497095e5bad0ab19d69f1e1"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -1674,10 +1674,11 @@ checksum = "59ce5ef949d49ee85593fc4d3f3f95ad61657076395cbbce23e2121fc5542074"
 
 [[package]]
 name = "io-lifetimes"
-version = "1.0.6"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cfa919a82ea574332e2de6e74b4c36e74d41982b335080fa59d4ef31be20fdf3"
+checksum = "76e86b86ae312accbf05ade23ce76b625e0e47a255712b7414037385a1c05380"
 dependencies = [
+ "hermit-abi 0.3.1",
  "libc",
  "windows-sys 0.45.0",
 ]
@@ -1689,7 +1690,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "21b6b32576413a8e69b90e952e4a026476040d81017b80445deda5f2d3921857"
 dependencies = [
  "hermit-abi 0.3.1",
- "io-lifetimes 1.0.6",
+ "io-lifetimes 1.0.7",
  "rustix 0.36.9",
  "windows-sys 0.45.0",
 ]
@@ -2624,7 +2625,7 @@ checksum = "fd5c6ff11fecd55b40746d1995a02f2eb375bf8c00d192d521ee09f42bef37bc"
 dependencies = [
  "bitflags",
  "errno",
- "io-lifetimes 1.0.6",
+ "io-lifetimes 1.0.7",
  "libc",
  "linux-raw-sys 0.1.4",
  "windows-sys 0.45.0",
