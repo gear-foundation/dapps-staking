@@ -38,7 +38,7 @@ fn init_staking(sys: &System) {
     )));
 }
 
-fn init_staking_token(sys: &System) {
+fn init_staking_token(sys: &System) -> FungibleToken {
     let mut st_token = FungibleToken::initialize(sys);
 
     st_token.mint(USERS[0], 100000);
@@ -58,13 +58,17 @@ fn init_staking_token(sys: &System) {
 
     st_token.mint(USERS[7], 20000);
     st_token.balance(USERS[7]).contains(20000);
+
+    st_token
 }
 
-fn init_reward_token(sys: &System) {
+fn init_reward_token(sys: &System) -> FungibleToken {
     let mut rw_token = FungibleToken::initialize(sys);
 
     rw_token.mint(USERS[0], 100000);
     rw_token.balance(USERS[0]).contains(100000);
+
+    rw_token
 }
 
 /// Sets the reward to be distributed within distribution time
@@ -134,8 +138,8 @@ fn calc_reward(staking: &mut Staking, source: &ActorId) -> u128 {
 fn stake() {
     let sys = System::new();
     init_staking(&sys);
-    init_staking_token(&sys);
-    init_reward_token(&sys);
+    let st_token = init_staking_token(&sys);
+    let rw_token = init_reward_token(&sys);
     sys.init_logger();
     let staking = sys.get_program(1);
 

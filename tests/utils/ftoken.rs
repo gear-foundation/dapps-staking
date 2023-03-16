@@ -57,6 +57,25 @@ impl<'a> FungibleToken<'a> {
         )
     }
 
+    #[track_caller]
+    pub fn approve(&mut self, from: u64, approved_account: impl Into<ActorId>, amount: u128) {
+        let transaction_id = self.transaction_id();
+
+        assert_ft_token_event_ok(
+            self.0.send(
+                from,
+                FTokenAction::Message {
+                    transaction_id,
+                    payload: Action::Approve {
+                        approved_account: approved_account.into(),
+                        amount,
+                    }
+                    .encode(),
+                },
+            ),
+        );
+    }
+
     pub fn balance(&self, actor_id: impl Into<ActorId>) -> RunResult<u128, FTokenEvent, ()> {
         RunResult::new(
             self.0
