@@ -38,7 +38,7 @@ impl Staking {
         from: &ActorId,
         to: &ActorId,
         amount_tokens: u128,
-    ) -> Result<FTokenEvent, Error> {
+    ) -> Result<(), Error> {
         let payload = Action::Transfer {
             sender: *from,
             recipient: *to,
@@ -60,14 +60,13 @@ impl Staking {
             token_address
         );
 
-        let result = msg::send_for_reply_as(*token_address, payload, 0)?
-            .await
-            .map_err(|e| {
-                gstd::debug!("Error at await = {:?}", e);
-                Error::TransferTokens
-            });
+        let result = msg::send_for_reply_as(*token_address, payload, 0)?.await?;
 
-        result
+        if let FTokenEvent::Err = result {
+            Err(Error::TransferTokens)
+        } else {
+            Ok(())
+        }
     }
 
     /// Calculates the reward produced so far
