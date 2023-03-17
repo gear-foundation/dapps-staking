@@ -53,12 +53,6 @@ impl Staking {
             transaction_id,
             payload,
         };
-        gstd::debug!(
-            "transfer_tokens() payload = {:?}, tid = {}, token_address = {:?}",
-            payload,
-            transaction_id,
-            token_address
-        );
 
         let result = msg::send_for_reply_as(*token_address, payload, 0)?.await?;
 
@@ -174,7 +168,6 @@ impl Staking {
                 ..Default::default()
             });
         self.total_staked = self.total_staked.saturating_add(amount);
-        gstd::debug!("self.total_staked = {:?}", self.total_staked);
         Ok(StakingEvent::StakeAccepted(amount))
     }
 
@@ -226,9 +219,8 @@ impl Staking {
         let staker = self
             .stakers
             .get_mut(&msg::source())
-            .expect("Staker not found (unreachable)");
+            .ok_or(Error::StakerNotFound)?;
 
-        gstd::debug!("self.reward_allowed = {:?}", staker.reward_allowed);
         staker.reward_allowed = staker.reward_allowed.saturating_add(amount_per_token);
         staker.balance = staker.balance.saturating_sub(amount);
         self.total_staked = self.total_staked.saturating_sub(amount);
@@ -267,10 +259,8 @@ async fn main() {
         );
         transaction_id
     };
-    gstd::debug!("action = {:?}", action);
     let result = match action {
         StakingAction::Stake(amount) => {
-            gstd::debug!("amount = {:?}", amount);
             let result = staking.stake(amount).await;
             staking.transactions.remove(&msg_source);
             result
@@ -291,7 +281,6 @@ async fn main() {
             result
         }
     };
-    gstd::debug!("Result = {:?}", result);
     reply(result).expect("Failed to encode or reply with `Result<StakingEvent, Error>`");
 }
 
