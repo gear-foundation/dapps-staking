@@ -47,7 +47,7 @@ ft-main-io = { git = "https://github.com/gear-dapps/sharded-fungible-token", tag
 gstd = { git = "https://github.com/gear-tech/gear", rev = "78dfa07" }
 staking-io = { path = "io" }
 staking-state = { path = "state" }
-hashbrown = "0.13.2"
+hashbrown = "0.13"
 gmeta = { git = "https://github.com/gear-tech/gear", rev = "78dfa07" }
 gtest = { git = "https://github.com/gear-tech/gear", rev = "78dfa07" }
 gclient = { git = "https://github.com/gear-tech/gear", rev = "78dfa07" }
