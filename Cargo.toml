@@ -45,10 +45,10 @@ gear-wasm-builder = { git = "https://github.com/gear-tech/gear", rev = "946ac47"
 gmeta = { git = "https://github.com/gear-tech/gear", rev = "946ac47" }
 gtest = { git = "https://github.com/gear-tech/gear", rev = "946ac47" }
 sp-core = { git = "https://github.com/gear-tech/substrate", rev = "36699c4" }
-ft-main-io = { git = "https://github.com/gear-dapps/sharded-fungible-token", branch = "update-deps" }
-ft-logic = { git = "https://github.com/gear-dapps/sharded-fungible-token", branch = "update-deps" }
-ft-storage = { git = "https://github.com/gear-dapps/sharded-fungible-token", branch = "update-deps" }
-ft-main = { git = "https://github.com/gear-dapps/sharded-fungible-token", branch = "update-deps" }
+ft-main-io = { git = "https://github.com/gear-dapps/sharded-fungible-token", tag = "2.1.4" }
+ft-logic = { git = "https://github.com/gear-dapps/sharded-fungible-token", tag = "2.1.4" }
+ft-storage = { git = "https://github.com/gear-dapps/sharded-fungible-token", tag = "2.1.4" }
+ft-main = { git = "https://github.com/gear-dapps/sharded-fungible-token", tag = "2.1.4" }
 staking-io.path = "io"
 staking-state.path = "state"
 hashbrown = "0.14"
